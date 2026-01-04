@@ -31,11 +31,14 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
+@TeleOp(name="TELEOP 1", group="Linear OpMode")
 public class BasicOmniOpMode_Linear extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
@@ -44,18 +47,26 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotorEx frontRightDrive = null;
     private DcMotorEx backRightDrive = null;
     private DcMotorEx intake = null;
+    private DcMotorEx shootR = null;
+    private DcMotorEx shootL = null;
+    private Servo gate = null;
+    private Servo rgbLight;
+
 
 
     @Override
     public void runOpMode() {
 
-        // Initialize the hardware variables. Note that the strings used here must correspond
-        // to the names assigned during the robot configuration step on the DS or RC devices.
         frontLeftDrive = hardwareMap.get(DcMotorEx.class, "fl");
         backLeftDrive = hardwareMap.get(DcMotorEx.class, "bl");
         frontRightDrive = hardwareMap.get(DcMotorEx.class, "fr");
         backRightDrive = hardwareMap.get(DcMotorEx.class, "br");
         intake = hardwareMap.get(DcMotorEx.class, "int");
+        shootR = hardwareMap.get(DcMotorEx.class, "shootR");
+        shootL = hardwareMap.get(DcMotorEx.class, "shootL");
+        gate = hardwareMap.get(Servo.class, "gate");
+        rgbLight = hardwareMap.get(Servo.class, "rgbLight");
+
 
 
 
@@ -64,6 +75,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         frontRightDrive.setDirection(DcMotorEx.Direction.FORWARD);
         backRightDrive.setDirection(DcMotorEx.Direction.FORWARD);
         intake.setDirection(DcMotorEx.Direction.FORWARD);
+        shootR.setDirection(DcMotorSimple.Direction.REVERSE);
+        shootL.setDirection(DcMotorSimple.Direction.FORWARD);
 
 
         frontLeftDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -71,21 +84,42 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         backLeftDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         backRightDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
+        PIDFCoefficients pidfCoefficients= new PIDFCoefficients(16, 0, 0, 16);
+        shootR.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+        shootL.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         waitForStart();
         runtime.reset();
+        gate.setPosition(0.25);
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            double currentVelocity = shootR.getVelocity();
+            if (currentVelocity >= 1560) {
+                rgbLight.setPosition(0.5);
+            } else {
+                rgbLight.setPosition(0.280);
+            }
 
             if (gamepad1.right_bumper){
                 intake.setPower(1);
             }
             else if (gamepad1.left_bumper) {
                 intake.setPower(0);
+            }
+
+            if (gamepad1.circle){
+                shootR.setVelocity(1600);
+                shootL.setVelocity(1600);
+                gate.setPosition(0.0);
+            } else if (gamepad1.cross) {
+                shootR.setVelocity(0);
+                shootL.setVelocity(0);
+                gate.setPosition(0.25);
             }
 
 
@@ -118,6 +152,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
+            telemetry.addData("Flywheel RPM", currentVelocity);
             telemetry.update();
         }
     }}

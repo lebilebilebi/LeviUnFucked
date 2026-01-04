@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
 
 
-@Autonomous(name = "Pedro Pathing Autonomous", group = "Autonomous")
+@Autonomous
 @Configurable
 public class blueSidePath extends OpMode {
 
