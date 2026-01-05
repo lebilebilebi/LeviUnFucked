@@ -20,7 +20,7 @@ public class HomeTest1 extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private final Pose startPose = new Pose(10, 10, Math.toRadians(90)); // Start Pose of robot
+    private final Pose startPose = new Pose(20.336448598130847, 122.61682242990655, Math.toRadians(144)); // Start Pose of robot
     private final Pose scorePose = new Pose(59.5, 84, Math.toRadians(180)); // Scoring pose
     private final Pose intakeStart1 = new Pose(20, 84); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
     private final Pose intakeStart2 = new Pose(41, 60, Math.toRadians(180)); // Drive to second line
