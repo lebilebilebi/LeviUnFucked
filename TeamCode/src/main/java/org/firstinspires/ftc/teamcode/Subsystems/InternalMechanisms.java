@@ -21,6 +21,8 @@ public class InternalMechanisms {
     // 2. Hardware variables
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotorEx intake = null;
+    private DcMotorEx turretMotor;
+
     private DcMotorEx shootR = null;
     private DcMotorEx shootL = null;
     private Servo gate = null;
@@ -36,11 +38,14 @@ public class InternalMechanisms {
         shootR = hardwareMap.get(DcMotorEx.class, "shootR");
         shootL = hardwareMap.get(DcMotorEx.class, "shootL");
         gate = hardwareMap.get(Servo.class, "gate");
+        turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
         rgbLight = hardwareMap.get(Servo.class, "rgbLight");
 
         intake.setDirection(DcMotorEx.Direction.FORWARD);
         shootR.setDirection(DcMotorSimple.Direction.REVERSE);
         shootL.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(16, 0, 0, 16);
         shootR.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
@@ -76,32 +81,47 @@ public class InternalMechanisms {
             case IDLE:
                 intake.setPower(0);
                 updateRainbowLED();
-                //close gate servo
+                gate.setPosition(0.6);
+                shootR.setVelocity(0);
+                shootL.setVelocity(0);
                 //center turret
                 //start LED to rainbow
                 break;
 
             case INTAKE:
-                //gate closed
+                gate.setPosition(0.6);
                 intake.setPower(1);
                 break;
 
             case SHOOT:
-                //gate open
+                gate.setPosition(0.2);
                 intake.setPower(1);
-                //shut off
                 break;
 
             case FAR_SIDE:
-                shootR.setVelocity(1600);
-                shootL.setVelocity(1600);
-                //shut off after 3 balls have gone through
+                shootR.setVelocity(1500);
+                shootL.setVelocity(1500);
+                if (currentVelocity>=1500){
+                    gate.setPosition(0.2);
+                    intake.setPower(1);
+                }
                 break;
 
             case CLOSE_SIDE:
-                //shootR.setVelocity(close side vel);
-                //shootL.setVelocity(close side vel);
-                //shut off after 3 balls have gone through
+                shootR.setVelocity(1300);
+                shootL.setVelocity(1300);
+                if (currentVelocity>=1300){
+                    gate.setPosition(0.2);
+                    intake.setPower(1);
+                }
+                break;
+
+            case LED_TEST_RAINBOW:
+                gate.setPosition(0.2);
+                break;
+
+            case LED_TEST_FLASHING:
+                gate.setPosition(0.6);
                 break;
         }
     }

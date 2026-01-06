@@ -20,13 +20,13 @@ public class HomeTest1 extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private final Pose startPose = new Pose(20.336448598130847, 122.61682242990655, Math.toRadians(144)); // Start Pose of robot
+    private final Pose startPose = new Pose(20.336448598130847, 122.61682242990655, Math.toRadians(140)); // Start Pose of robot
     private final Pose scorePose = new Pose(59.5, 84, Math.toRadians(180)); // Scoring pose
-    private final Pose intakeStart1 = new Pose(20, 84); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
+    private final Pose intakeStart1 = new Pose(20, 84, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
     private final Pose intakeStart2 = new Pose(41, 60, Math.toRadians(180)); // Drive to second line
-    private final Pose intake2 = new Pose(20, 60); // Intake along second line
+    private final Pose intake2 = new Pose(20, 60, Math.toRadians(180)); // Intake along second line
     private final Pose intakeStart3 = new Pose(41, 36, Math.toRadians(180)); // Drive to third line
-    private final Pose intake3 = new Pose(20, 36); // Intake along third line
+    private final Pose intake3 = new Pose(20, 36, Math.toRadians(180)); // Intake along third line
 
     private PathChain scorePreload, driveAndIntake1, score1, drive2, intakePath2, score2, drive3, intakePath3, score3;
 
@@ -173,6 +173,7 @@ public class HomeTest1 extends OpMode {
      **/
     @Override
     public void init() {
+        mechanisms = new InternalMechanisms(hardwareMap);
         intake = hardwareMap.get(DcMotorEx.class, "int"); //intake motor init statement
         pathTimer = new Timer();
         opmodeTimer = new Timer();

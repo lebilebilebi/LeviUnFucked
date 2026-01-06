@@ -27,6 +27,20 @@ public class DECODEOPMODE1 extends LinearOpMode {
         while (opModeIsActive()) { //_______________________________________
             mechanisms.update();
 
+            if (gamepad1.right_bumper){
+                mechanisms.setState(RoboStates.INTAKE);
+            }
+            else if (gamepad1.left_bumper){
+                mechanisms.setState(RoboStates.IDLE);
+
+            }
+            else if (gamepad1.circleWasPressed()){
+                mechanisms.setState(RoboStates.FAR_SIDE);
+            }
+            else if (gamepad1.crossWasPressed()){
+                mechanisms.setState(RoboStates.CLOSE_SIDE);
+            }
+
             //DRIVE
             double axial = -gamepad1.left_stick_y;
             double lateral = gamepad1.left_stick_x;
