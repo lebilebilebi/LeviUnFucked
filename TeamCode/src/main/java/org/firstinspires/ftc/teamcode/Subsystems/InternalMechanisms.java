@@ -15,7 +15,9 @@ public class InternalMechanisms {
         FAR_SIDE,
         CLOSE_SIDE,
         LED_TEST_RAINBOW,
-        LED_TEST_FLASHING
+        LED_TEST_FLASHING,
+        AUTO_SCORE,
+        AUTO_SPINUP
     }
 
     // 2. Hardware variables
@@ -114,6 +116,20 @@ public class InternalMechanisms {
                     gate.setPosition(0.2);
                     intake.setPower(1);
                 }
+                break;
+
+            case AUTO_SCORE:
+                shootR.setVelocity(1200);
+                shootL.setVelocity(1200);
+                if (currentVelocity>=1200){
+                    gate.setPosition(0.2);
+                    intake.setPower(1);
+                }
+                break;
+
+            case AUTO_SPINUP:
+                shootR.setVelocity(1200);
+                shootL.setVelocity(1200);
                 break;
 
             case LED_TEST_RAINBOW:

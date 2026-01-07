@@ -20,58 +20,70 @@ public class HomeTest1 extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
+    double shootWaitTime = 6;
     private final Pose startPose = new Pose(20.336448598130847, 122.61682242990655, Math.toRadians(140)); // Start Pose of robot
-    private final Pose scorePose = new Pose(59.5, 84, Math.toRadians(180)); // Scoring pose
-    private final Pose intakeStart1 = new Pose(20, 84, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
-    private final Pose intakeStart2 = new Pose(41, 60, Math.toRadians(180)); // Drive to second line
-    private final Pose intake2 = new Pose(20, 60, Math.toRadians(180)); // Intake along second line
+    private final Pose scorePose = new Pose(59.5, 84, Math.toRadians(144)); // Scoring pose
+    private final Pose preloadScore = new Pose(59.5, 84, Math.toRadians(180)); // Preload scoring pose
+    private final Pose intakeStart1 = new Pose(10, 84, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
+    private final Pose intakeStart2 = new Pose(41, 58, Math.toRadians(180)); // Drive to second line
+    private final Pose intake2 = new Pose(10, 58, Math.toRadians(180)); // Intake along second line
     private final Pose intakeStart3 = new Pose(41, 36, Math.toRadians(180)); // Drive to third line
-    private final Pose intake3 = new Pose(20, 36, Math.toRadians(180)); // Intake along third line
+    private final Pose intake3 = new Pose(8, 36, Math.toRadians(180)); // Intake along third line
 
     private PathChain scorePreload, driveAndIntake1, score1, drive2, intakePath2, score2, drive3, intakePath3, score3;
 
     public void buildPaths() {
         scorePreload = follower.pathBuilder()
-                .addPath(new BezierLine(startPose, scorePose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addParametricCallback(50,()->{mechanisms.setState(RoboStates.AUTO_SPINUP);})
+                .addPath(new BezierLine(startPose, preloadScore))
+                .setLinearHeadingInterpolation(startPose.getHeading(), preloadScore.getHeading())
                 .build();
 
         driveAndIntake1 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, intakeStart1))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), intakeStart1.getHeading())
+                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addPath(new BezierLine(preloadScore, intakeStart1))
+                .setLinearHeadingInterpolation(preloadScore.getHeading(), intakeStart1.getHeading())
                 .build();
 
         score1 = follower.pathBuilder()
+                .addParametricCallback(100,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intakeStart1, scorePose))
                 .setLinearHeadingInterpolation(intakeStart1.getHeading(), scorePose.getHeading())
                 .build();
 
         drive2 = follower.pathBuilder()
+                .addParametricCallback(100,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(scorePose, intakeStart2))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), intakeStart2.getHeading())
                 .build();
 
         intakePath2 = follower.pathBuilder()
+                .addParametricCallback(100,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intakeStart2, intake2))
                 .setLinearHeadingInterpolation(intakeStart2.getHeading(), intake2.getHeading())
                 .build();
 
         score2 = follower.pathBuilder()
+                .addParametricCallback(100,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intake2, scorePose))
                 .setLinearHeadingInterpolation(intake2.getHeading(), scorePose.getHeading())
                 .build();
 
         drive3 = follower.pathBuilder()
+                .addParametricCallback(100,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(scorePose, intakeStart3))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), intakeStart3.getHeading())
                 .build();
 
         intakePath3 = follower.pathBuilder()
+                .addParametricCallback(100,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intakeStart3, intake3))
                 .setLinearHeadingInterpolation(intakeStart3.getHeading(), intake3.getHeading())
                 .build();
 
         score3 = follower.pathBuilder()
+                .addParametricCallback(100,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intake3, scorePose))
                 .setLinearHeadingInterpolation(intake3.getHeading(), scorePose.getHeading())
                 .build();
@@ -82,6 +94,7 @@ public class HomeTest1 extends OpMode {
             case 0:
                 follower.followPath(scorePreload);
                 setPathState(1);
+                mechanisms.setState(RoboStates.IDLE);
                 break;
 
             case 1:
@@ -97,13 +110,18 @@ public class HomeTest1 extends OpMode {
                     mechanisms.setState(RoboStates.IDLE);
                     follower.followPath(score1);
                     setPathState(3);
-                }
+                    }
                 break;
 
             case 3:
                 if (!follower.isBusy()) {
-                    follower.followPath(drive2);
-                    setPathState(4);
+                    mechanisms.setState(RoboStates.AUTO_SCORE);
+                    if (pathTimer.getElapsedTimeSeconds() > shootWaitTime) {
+                        follower.followPath(drive2);
+                        setPathState(4);
+                        mechanisms.setState(RoboStates.IDLE);
+                        break;
+                    }
                 }
                 break;
 
@@ -125,8 +143,13 @@ public class HomeTest1 extends OpMode {
 
             case 6:
                 if (!follower.isBusy()) {
-                    follower.followPath(drive3);
-                    setPathState(7);
+                    mechanisms.setState(RoboStates.AUTO_SCORE);
+                    if (pathTimer.getElapsedTimeSeconds() > shootWaitTime) {
+                        follower.followPath(drive3);
+                        setPathState(7);
+                        mechanisms.setState(RoboStates.IDLE);
+                        break;
+                    }
                 }
                 break;
 
@@ -142,6 +165,16 @@ public class HomeTest1 extends OpMode {
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.IDLE);
                     follower.followPath(score3);
+                }
+                break;
+            case 9:
+                if(!follower.isBusy()) {
+                    mechanisms.setState(RoboStates.AUTO_SCORE);
+                    if (pathTimer.getElapsedTimeSeconds() > shootWaitTime) {
+                        setPathState(-1);
+                        mechanisms.setState(RoboStates.IDLE);
+                        break;
+                    }
                 }
                 break;
         }
@@ -160,6 +193,7 @@ public class HomeTest1 extends OpMode {
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         autonomousPathUpdate();
+        mechanisms.update();
         // Feedback to Driver Hub for debugging
         telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
