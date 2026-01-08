@@ -27,17 +27,17 @@ public class DECODEOPMODE1 extends LinearOpMode {
         while (opModeIsActive()) { //_______________________________________
             mechanisms.update();
 
-            if (gamepad1.right_bumper){
+            if (gamepad2.right_bumper){
                 mechanisms.setState(RoboStates.INTAKE);
             }
-            else if (gamepad1.left_bumper){
+            else if (gamepad2.left_bumper){
                 mechanisms.setState(RoboStates.IDLE);
 
             }
-            else if (gamepad1.circleWasPressed()){
+            else if (gamepad2.circleWasPressed()){
                 mechanisms.setState(RoboStates.FAR_SIDE);
             }
-            else if (gamepad1.crossWasPressed()){
+            else if (gamepad2.crossWasPressed()){
                 mechanisms.setState(RoboStates.CLOSE_SIDE);
             }
 
