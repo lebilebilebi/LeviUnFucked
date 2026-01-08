@@ -127,6 +127,9 @@ public class InternalMechanisms {
                 break;
 
             case AUTO_SPINUP:
+                intake.setPower(0);
+                updateRainbowLED();
+                gate.setPosition(0.6);
                 shootR.setVelocity(1200);
                 shootL.setVelocity(1200);
                 break;

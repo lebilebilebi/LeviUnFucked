@@ -24,32 +24,36 @@ public class HomeTest1 extends OpMode {
     private final Pose startPose = new Pose(21.45794392523365, 122.61682242990655, Math.toRadians(140)); // Start Pose of robot
     private final Pose scorePose = new Pose(55, 88, Math.toRadians(144)); // Scoring pose
     private final Pose endPose = new Pose(14, 70, Math.toRadians(90)); // Ending pose
-    private final Pose preloadScore = new Pose(59.5, 84, Math.toRadians(180)); // Preload scoring pose
+    private final Pose turnTo180 = new Pose(55, 88, Math.toRadians(180)); //Turn from preload shoot to face balls for first intake
     private final Pose intakeStart1 = new Pose(10, 84, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
     private final Pose intakeStart2 = new Pose(41, 58, Math.toRadians(180)); // Drive to second line
     private final Pose intake2 = new Pose(10, 58, Math.toRadians(180)); // Intake along second line
     private final Pose intakeStart3 = new Pose(41, 36, Math.toRadians(180)); // Drive to third line
     private final Pose intake3 = new Pose(8, 36, Math.toRadians(180)); // Intake along third line
 
-    private PathChain scorePreload, driveToEnd, driveAndIntake1, score1, drive2, intakePath2, score2, drive3, intakePath3, score3;
+    private PathChain scorePreload, driveToEnd, turn, driveAndIntake1, score1, drive2, intakePath2, score2, drive3, intakePath3, score3;
 
     public void buildPaths() {
         scorePreload = follower.pathBuilder()
                 .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
-                .addParametricCallback(0.0,()->{mechanisms.setState(RoboStates.AUTO_SPINUP);})
-                .addPath(new BezierLine(startPose, preloadScore))
-                .setLinearHeadingInterpolation(startPose.getHeading(), preloadScore.getHeading())
+                .addPath(new BezierLine(startPose, scorePose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
+                .build();
+
+        turn = follower.pathBuilder()
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
+                .addPath(new BezierLine(scorePose, turnTo180))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), turnTo180.getHeading())
                 .build();
 
         driveAndIntake1 = follower.pathBuilder()
                 .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
-                .addPath(new BezierLine(preloadScore, intakeStart1))
-                .setLinearHeadingInterpolation(preloadScore.getHeading(), intakeStart1.getHeading())
+                .addPath(new BezierLine(turnTo180, intakeStart1))
+                .setLinearHeadingInterpolation(turnTo180.getHeading(), intakeStart1.getHeading())
                 .build();
 
         score1 = follower.pathBuilder()
                 .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
-                .addParametricCallback(0.0,()->{mechanisms.setState(RoboStates.AUTO_SPINUP);})
                 .addPath(new BezierLine(intakeStart1, scorePose))
                 .setLinearHeadingInterpolation(intakeStart1.getHeading(), scorePose.getHeading())
                 .build();
@@ -67,7 +71,6 @@ public class HomeTest1 extends OpMode {
                 .build();
 
         score2 = follower.pathBuilder()
-                .addParametricCallback(0.0,()->{mechanisms.setState(RoboStates.AUTO_SPINUP);})
                 .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intake2, scorePose))
                 .setLinearHeadingInterpolation(intake2.getHeading(), scorePose.getHeading())
@@ -86,7 +89,6 @@ public class HomeTest1 extends OpMode {
                 .build();
 
         score3 = follower.pathBuilder()
-                .addParametricCallback(0.0,()->{mechanisms.setState(RoboStates.AUTO_SPINUP);})
                 .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intake3, scorePose))
                 .setLinearHeadingInterpolation(intake3.getHeading(), scorePose.getHeading())
@@ -102,83 +104,95 @@ public class HomeTest1 extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
+                mechanisms.setState(RoboStates.AUTO_SPINUP);
                 follower.followPath(scorePreload);
                 setPathState(1);
-                mechanisms.setState(RoboStates.IDLE);
                 break;
 
             case 1:
                 if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.INTAKE);
-                    follower.followPath(driveAndIntake1);
-                    setPathState(2);
-                }
-                break;
-
-            case 2:
-                if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.IDLE);
-                    follower.followPath(score1);
-                    setPathState(3);
-                    }
-                break;
-
-            case 3:
-                if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.AUTO_SCORE);
                     if (pathTimer.getElapsedTimeSeconds() > shootWaitTime) {
-                        follower.followPath(drive2);
-                        setPathState(4);
+                        follower.followPath(turn);
+                        setPathState(2);
                         mechanisms.setState(RoboStates.IDLE);
                         break;
                     }
                 }
                 break;
 
-            case 4:
+            case 2:
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.INTAKE);
-                    follower.followPath(intakePath2);
-                    setPathState(5);
+                    follower.followPath(driveAndIntake1);
+                    setPathState(3);
+                }
+                break;
+
+            case 3:
+                if (!follower.isBusy()) {
+                    mechanisms.setState(RoboStates.AUTO_SPINUP);
+                    follower.followPath(score1);
+                    setPathState(4);
+                    }
+                break;
+
+            case 4:
+                if (!follower.isBusy()) {
+                    mechanisms.setState(RoboStates.AUTO_SCORE);
+                    if (pathTimer.getElapsedTimeSeconds() > shootWaitTime) {
+                        follower.followPath(drive2);
+                        setPathState(5);
+                        mechanisms.setState(RoboStates.IDLE);
+                        break;
+                    }
                 }
                 break;
 
             case 5:
                 if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.IDLE);
-                    follower.followPath(score2);
+                    mechanisms.setState(RoboStates.INTAKE);
+                    follower.followPath(intakePath2);
                     setPathState(6);
                 }
                 break;
 
             case 6:
                 if (!follower.isBusy()) {
+                    mechanisms.setState(RoboStates.AUTO_SPINUP);
+                    follower.followPath(score2);
+                    setPathState(7);
+                }
+                break;
+
+            case 7:
+                if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.AUTO_SCORE);
                     if (pathTimer.getElapsedTimeSeconds() > shootWaitTime) {
                         follower.followPath(drive3);
-                        setPathState(7);
+                        setPathState(8);
                         mechanisms.setState(RoboStates.IDLE);
                         break;
                     }
                 }
                 break;
 
-            case 7:
+            case 8:
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.INTAKE);
                     follower.followPath(intakePath3);
-                    setPathState(8);
-                }
-                break;
-
-            case 8:
-                if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.IDLE);
-                    follower.followPath(score3);
                     setPathState(9);
                 }
                 break;
+
             case 9:
+                if (!follower.isBusy()) {
+                    mechanisms.setState(RoboStates.IDLE);
+                    follower.followPath(score3);
+                    setPathState(10);
+                }
+                break;
+            case 10:
                 if(!follower.isBusy()) {
                     mechanisms.setState(RoboStates.AUTO_SCORE);
                     if (pathTimer.getElapsedTimeSeconds() > shootWaitTime) {
