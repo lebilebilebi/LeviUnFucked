@@ -15,7 +15,6 @@ import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms.RoboStates;
 
 @Autonomous(name = "Home Test 1", group = "Auto")
 public class HomeTest1 extends OpMode {
-    //sd
     InternalMechanisms mechanisms;
     private DcMotorEx intake = null;
     private Follower follower;
@@ -36,62 +35,65 @@ public class HomeTest1 extends OpMode {
 
     public void buildPaths() {
         scorePreload = follower.pathBuilder()
-                .addParametricCallback(100,()->{pathTimer.resetTimer();})
-                .addParametricCallback(50,()->{mechanisms.setState(RoboStates.AUTO_SPINUP);})
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
+                .addParametricCallback(0.0,()->{mechanisms.setState(RoboStates.AUTO_SPINUP);})
                 .addPath(new BezierLine(startPose, preloadScore))
                 .setLinearHeadingInterpolation(startPose.getHeading(), preloadScore.getHeading())
                 .build();
 
         driveAndIntake1 = follower.pathBuilder()
-                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(preloadScore, intakeStart1))
                 .setLinearHeadingInterpolation(preloadScore.getHeading(), intakeStart1.getHeading())
                 .build();
 
         score1 = follower.pathBuilder()
-                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
+                .addParametricCallback(0.0,()->{mechanisms.setState(RoboStates.AUTO_SPINUP);})
                 .addPath(new BezierLine(intakeStart1, scorePose))
                 .setLinearHeadingInterpolation(intakeStart1.getHeading(), scorePose.getHeading())
                 .build();
 
         drive2 = follower.pathBuilder()
-                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(scorePose, intakeStart2))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), intakeStart2.getHeading())
                 .build();
 
         intakePath2 = follower.pathBuilder()
-                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intakeStart2, intake2))
                 .setLinearHeadingInterpolation(intakeStart2.getHeading(), intake2.getHeading())
                 .build();
 
         score2 = follower.pathBuilder()
-                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addParametricCallback(0.0,()->{mechanisms.setState(RoboStates.AUTO_SPINUP);})
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intake2, scorePose))
                 .setLinearHeadingInterpolation(intake2.getHeading(), scorePose.getHeading())
                 .build();
 
         drive3 = follower.pathBuilder()
-                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(scorePose, intakeStart3))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), intakeStart3.getHeading())
                 .build();
 
         intakePath3 = follower.pathBuilder()
-                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intakeStart3, intake3))
                 .setLinearHeadingInterpolation(intakeStart3.getHeading(), intake3.getHeading())
                 .build();
 
         score3 = follower.pathBuilder()
-                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addParametricCallback(0.0,()->{mechanisms.setState(RoboStates.AUTO_SPINUP);})
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(intake3, scorePose))
                 .setLinearHeadingInterpolation(intake3.getHeading(), scorePose.getHeading())
                 .build();
 
         driveToEnd = follower.pathBuilder()
-                .addParametricCallback(100,()->{pathTimer.resetTimer();})
+                .addParametricCallback(1.0,()->{pathTimer.resetTimer();})
                 .addPath(new BezierLine(scorePose, endPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())
                 .build();

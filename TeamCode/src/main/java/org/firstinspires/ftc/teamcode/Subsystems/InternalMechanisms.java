@@ -24,7 +24,6 @@ public class InternalMechanisms {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotorEx intake = null;
     private DcMotorEx turretMotor;
-
     private DcMotorEx shootR = null;
     private DcMotorEx shootL = null;
     private Servo gate = null;

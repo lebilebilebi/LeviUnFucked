@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms.RoboStates;
 public class DECODEOPMODE1 extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     InternalMechanisms mechanisms;
-    DriveMechanisms drive;//dsf
+    DriveMechanisms drive;
 
     @Override
     public void runOpMode() { //_______________________________________
