@@ -100,18 +100,22 @@ public class InternalMechanisms {
                 break;
 
             case FAR_SIDE:
+                rgbLight.setPosition(0.280);
                 shootR.setVelocity(1500);
                 shootL.setVelocity(1500);
                 if (currentVelocity>=1500){
+                    rgbLight.setPosition(0.5);
                     gate.setPosition(0.2);
                     intake.setPower(1);
                 }
                 break;
 
             case CLOSE_SIDE:
+                rgbLight.setPosition(0.280);
                 shootR.setVelocity(1300);
                 shootL.setVelocity(1300);
                 if (currentVelocity>=1300){
+                    rgbLight.setPosition(0.5);
                     gate.setPosition(0.2);
                     intake.setPower(1);
                 }
@@ -121,6 +125,7 @@ public class InternalMechanisms {
                 shootR.setVelocity(1150);
                 shootL.setVelocity(1150);
                 if (currentVelocity>=1150){
+                    rgbLight.setPosition(0.5);
                     gate.setPosition(0.2);
                     intake.setPower(1);
                 }
@@ -128,7 +133,7 @@ public class InternalMechanisms {
 
             case AUTO_SPINUP:
                 intake.setPower(0);
-                updateRainbowLED();
+                rgbLight.setPosition(0.280);
                 gate.setPosition(0.6);
                 shootR.setVelocity(1200);
                 shootL.setVelocity(1200);

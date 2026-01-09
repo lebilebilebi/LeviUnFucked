@@ -13,21 +13,21 @@ import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms.RoboStates;
 
 
-@Autonomous(name = "Home Test 1", group = "Auto")
+@Autonomous(name = "BLUE 12 BALL: CLOSE START", group = "Auto")
 public class HomeTest1 extends OpMode {
     InternalMechanisms mechanisms;
     private DcMotorEx intake = null;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    double shootWaitTime = 4;
+    double shootWaitTime = 3;
     private final Pose startPose = new Pose(21.45794392523365, 122.61682242990655, Math.toRadians(140)); // Start Pose of robot
     private final Pose scorePose = new Pose(55, 88, Math.toRadians(144)); // Scoring pose
     private final Pose endPose = new Pose(13, 70, Math.toRadians(90)); // Ending pose
     private final Pose turnTo180 = new Pose(55, 84, Math.toRadians(180)); //Turn from preload shoot to face balls for first intake
-    private final Pose intakeStart1 = new Pose(10, 84, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
+    private final Pose intakeStart1 = new Pose(9, 84, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
     private final Pose intakeStart2 = new Pose(41, 58, Math.toRadians(180)); // Drive to second line
-    private final Pose intake2 = new Pose(10, 58, Math.toRadians(180)); // Intake along second line
+    private final Pose intake2 = new Pose(8, 58, Math.toRadians(180)); // Intake along second line
     private final Pose intakeStart3 = new Pose(41, 36, Math.toRadians(180)); // Drive to third line
     private final Pose intake3 = new Pose(8, 36, Math.toRadians(180)); // Intake along third line
 

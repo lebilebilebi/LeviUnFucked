@@ -40,7 +40,6 @@ public class DECODEOPMODE1 extends LinearOpMode {
             else if (gamepad2.crossWasPressed()){
                 mechanisms.setState(RoboStates.CLOSE_SIDE);
             }
-
             //DRIVE
             double axial = -gamepad1.left_stick_y;
             double lateral = gamepad1.left_stick_x;
@@ -49,8 +48,8 @@ public class DECODEOPMODE1 extends LinearOpMode {
             drive.drive(axial, lateral, yaw);
             //TELEMETRY DATA
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Flywheel RPM", mechanisms.getVelocity());
-            telemetry.addData("LED POSITION ", mechanisms.getLedColor());
+            telemetry.addData("FLYWHEEL TPR", mechanisms.getVelocity());
+            telemetry.addData("LED POSITION", mechanisms.getLedColor());
             telemetry.update();
         }
     }
