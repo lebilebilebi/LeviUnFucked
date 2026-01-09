@@ -118,9 +118,9 @@ public class InternalMechanisms {
                 break;
 
             case AUTO_SCORE:
-                shootR.setVelocity(1200);
-                shootL.setVelocity(1200);
-                if (currentVelocity>=1200){
+                shootR.setVelocity(1150);
+                shootL.setVelocity(1150);
+                if (currentVelocity>=1150){
                     gate.setPosition(0.2);
                     intake.setPower(1);
                 }

@@ -20,11 +20,11 @@ public class HomeTest1 extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    double shootWaitTime = 6;
+    double shootWaitTime = 4;
     private final Pose startPose = new Pose(21.45794392523365, 122.61682242990655, Math.toRadians(140)); // Start Pose of robot
     private final Pose scorePose = new Pose(55, 88, Math.toRadians(144)); // Scoring pose
-    private final Pose endPose = new Pose(14, 70, Math.toRadians(90)); // Ending pose
-    private final Pose turnTo180 = new Pose(55, 88, Math.toRadians(180)); //Turn from preload shoot to face balls for first intake
+    private final Pose endPose = new Pose(13, 70, Math.toRadians(90)); // Ending pose
+    private final Pose turnTo180 = new Pose(55, 84, Math.toRadians(180)); //Turn from preload shoot to face balls for first intake
     private final Pose intakeStart1 = new Pose(10, 84, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
     private final Pose intakeStart2 = new Pose(41, 58, Math.toRadians(180)); // Drive to second line
     private final Pose intake2 = new Pose(10, 58, Math.toRadians(180)); // Intake along second line
@@ -113,10 +113,9 @@ public class HomeTest1 extends OpMode {
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.AUTO_SCORE);
                     if (pathTimer.getElapsedTimeSeconds() > shootWaitTime) {
+                        mechanisms.setState(RoboStates.IDLE);
                         follower.followPath(turn);
                         setPathState(2);
-                        mechanisms.setState(RoboStates.IDLE);
-                        break;
                     }
                 }
                 break;
@@ -187,7 +186,7 @@ public class HomeTest1 extends OpMode {
 
             case 9:
                 if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.IDLE);
+                    mechanisms.setState(RoboStates.AUTO_SPINUP);
                     follower.followPath(score3);
                     setPathState(10);
                 }
