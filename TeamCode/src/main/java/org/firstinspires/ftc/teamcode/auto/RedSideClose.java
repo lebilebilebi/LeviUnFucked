@@ -1,35 +1,36 @@
 package org.firstinspires.ftc.teamcode.auto;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms.RoboStates;
+import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
 
 
 @Autonomous(name = "BLUE 12 BALL: CLOSE START", group = "Auto")
-public class HomeTest1 extends OpMode {
+public class RedSideClose extends OpMode {
     InternalMechanisms mechanisms;
     private DcMotorEx intake = null;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
     double shootWaitTime = 3;
-    private final Pose startPose = new Pose(21.45794392523365, 122.61682242990655, Math.toRadians(140)); // Start Pose of robot
-    private final Pose scorePose = new Pose(55, 88, Math.toRadians(144)); // Scoring pose
-    private final Pose endPose = new Pose(13, 70, Math.toRadians(90)); // Ending pose
-    private final Pose turnTo180 = new Pose(55, 84, Math.toRadians(180)); //Turn from preload shoot to face balls for first intake
-    private final Pose intakeStart1 = new Pose(9, 84, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
-    private final Pose intakeStart2 = new Pose(41, 58, Math.toRadians(180)); // Drive to second line
-    private final Pose intake2 = new Pose(8, 58, Math.toRadians(180)); // Intake along second line
-    private final Pose intakeStart3 = new Pose(41, 36, Math.toRadians(180)); // Drive to third line
-    private final Pose intake3 = new Pose(8, 36, Math.toRadians(180)); // Intake along third line
+    private final Pose startPose = new Pose(144-21.45794392523365, 122.61682242990655, Math.toRadians(50)); // Start Pose of robot
+    private final Pose scorePose = new Pose(144-55, 88, Math.toRadians(54)); // Scoring pose
+    private final Pose endPose = new Pose(144-13, 70, Math.toRadians(90)); // Ending pose
+    private final Pose turnTo180 = new Pose(144-55, 84, Math.toRadians(0)); //Turn from preload shoot to face balls for first intake
+    private final Pose intakeStart1 = new Pose(144-9, 84, Math.toRadians(0)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
+    private final Pose intakeStart2 = new Pose(144-41, 58, Math.toRadians(0)); // Drive to second line
+    private final Pose intake2 = new Pose(144-8, 58, Math.toRadians(0)); // Intake along second line
+    private final Pose intakeStart3 = new Pose(144-41, 36, Math.toRadians(0)); // Drive to third line
+    private final Pose intake3 = new Pose(144-8, 36, Math.toRadians(0)); // Intake along third line
 
     private PathChain scorePreload, driveToEnd, turn, driveAndIntake1, score1, drive2, intakePath2, score2, drive3, intakePath3, score3;
 
