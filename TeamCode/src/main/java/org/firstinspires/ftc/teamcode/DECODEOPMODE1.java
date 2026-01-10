@@ -26,7 +26,10 @@ public class DECODEOPMODE1 extends LinearOpMode {
 
         while (opModeIsActive()) { //_______________________________________
             mechanisms.update();
-
+            if (runtime.time()==1.30){
+                gamepad1.rumble(1000);
+                gamepad2.rumble(1000);
+            }
             if (gamepad2.right_bumper){
                 mechanisms.setState(RoboStates.INTAKE);
             }
@@ -40,6 +43,11 @@ public class DECODEOPMODE1 extends LinearOpMode {
             else if (gamepad2.crossWasPressed()){
                 mechanisms.setState(RoboStates.CLOSE_SIDE);
             }
+            else if (gamepad2.triangleWasPressed()){
+                mechanisms.setState(RoboStates.AUTO_SCORE);
+            }
+
+
             //DRIVE
             double axial = -gamepad1.left_stick_y;
             double lateral = gamepad1.left_stick_x;
