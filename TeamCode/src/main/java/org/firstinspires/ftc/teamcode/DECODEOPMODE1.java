@@ -76,6 +76,8 @@ public class DECODEOPMODE1 extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("FLYWHEEL TPR", mechanisms.getVelocity());
             telemetry.addData("LED POSITION", mechanisms.getLedColor());
+            telemetry.addData("Stage 1 current", mechanisms.getStage1Current());
+            telemetry.addData("Stage 2 current", mechanisms.getStage2Current());
             telemetry.update();
         }
     }
