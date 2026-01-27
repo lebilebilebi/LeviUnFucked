@@ -101,9 +101,9 @@ public class InternalMechanisms {
 
             case FAR_SIDE:
                 rgbLight.setPosition(0.280);
-                shootR.setVelocity(1500);
-                shootL.setVelocity(1500);
-                if (currentVelocity>=1500){
+                shootR.setVelocity(1475);
+                shootL.setVelocity(1475);
+                if (currentVelocity>=1475){
                     rgbLight.setPosition(0.5);
                     gate.setPosition(0.2);
                     intake.setPower(1);

@@ -19,7 +19,7 @@ public class BlueSideClose extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    double shootWaitTime = 3;
+    double shootWaitTime = 5;
     private final Pose startPose = new Pose(21.45794392523365, 122.61682242990655, Math.toRadians(140)); // Start Pose of robot
     private final Pose scorePose = new Pose(55, 88, Math.toRadians(144)); // Scoring pose
     private final Pose endPose = new Pose(13, 70, Math.toRadians(90)); // Ending pose

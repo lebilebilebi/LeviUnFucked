@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Subsystems.DriveMechanisms;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms;
+
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms.RoboStates;
 
@@ -14,13 +16,20 @@ public class DECODEOPMODE1 extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     InternalMechanisms mechanisms;
     DriveMechanisms drive;
+    private Servo hoodR = null;
+    private Servo hoodL = null;
+
+
 
     @Override
     public void runOpMode() { //_______________________________________
         mechanisms = new InternalMechanisms(hardwareMap);
         drive = new DriveMechanisms(hardwareMap);
         telemetry.addData("Status", "GOOOOOOOOOOOOOOOOOO!!!!!!!!!!!!!");
+        hoodR = hardwareMap.get(Servo.class, "hoodR");
+        hoodL = hardwareMap.get(Servo.class, "hoodL");
         telemetry.update();
+
 
         waitForStart(); //_______________________________________
 
@@ -45,6 +54,15 @@ public class DECODEOPMODE1 extends LinearOpMode {
             }
             else if (gamepad2.triangleWasPressed()){
                 mechanisms.setState(RoboStates.AUTO_SCORE);
+            }
+
+            if(gamepad1.dpadUpWasPressed()){
+                hoodR.setPosition(0);
+                hoodL.setPosition(0);
+            }
+            else if(gamepad1.dpadDownWasPressed()){
+                hoodR.setPosition(0.9);
+                hoodL.setPosition(0.9);
             }
 
 
