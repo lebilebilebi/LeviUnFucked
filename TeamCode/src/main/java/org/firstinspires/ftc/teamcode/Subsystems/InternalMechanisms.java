@@ -12,6 +12,8 @@ public class InternalMechanisms {
     public enum RoboStates {
         IDLE,
         INTAKE,
+        FIRST_BALL_STOP,
+        FULL_STOP,
         SHOOT,
         FAR_SIDE,
         CLOSE_SIDE,
@@ -25,19 +27,17 @@ public class InternalMechanisms {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotorEx intakeStage1 = null;
     private DcMotorEx intakeStage2 = null;
-
-    private DcMotorEx turretMotor;
     private DcMotorEx shootR = null;
     private DcMotorEx shootL = null;
     private Servo gate = null;
     private Servo rgbLight;
     private RoboStates IOState = RoboStates.IDLE;
     private double currentVelocity = 0;
-    double stage1Current = intakeStage1.getCurrent(CurrentUnit.AMPS);
-    double stage2Current = intakeStage2.getCurrent(CurrentUnit.AMPS);
+    double stage1Current = 0;
+    double stage2Current = 0;
     double cycleDuration = 0.7;
     private ElapsedTime ledTimer = new ElapsedTime();
-    private static final double CURRENT_LIMIT_AMPS = 4.5;
+    private static final double CURRENT_LIMIT_AMPS = 8.5;
 
     public InternalMechanisms(HardwareMap hardwareMap) {
 
@@ -46,18 +46,15 @@ public class InternalMechanisms {
         shootR = hardwareMap.get(DcMotorEx.class, "shootR");
         shootL = hardwareMap.get(DcMotorEx.class, "shootL");
         gate = hardwareMap.get(Servo.class, "gate");
-        turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
         rgbLight = hardwareMap.get(Servo.class, "rgbLight");
 
-        intakeStage1.setDirection(DcMotorEx.Direction.REVERSE);
-        intakeStage2.setDirection(DcMotorEx.Direction.FORWARD);
+        intakeStage1.setDirection(DcMotorEx.Direction.FORWARD);
+        intakeStage2.setDirection(DcMotorEx.Direction.REVERSE);
         shootR.setDirection(DcMotorSimple.Direction.REVERSE);
         shootL.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intakeStage1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         intakeStage2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-
 
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(16, 0, 0, 16);
         shootR.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
@@ -81,6 +78,9 @@ public class InternalMechanisms {
     public double getStage2Current() {
         return stage2Current;
     }
+    public double getCurrentLimitAmps() {
+        return CURRENT_LIMIT_AMPS;
+    }
 
     private void updateRainbowLED() {
         double time = ledTimer.seconds();
@@ -97,7 +97,8 @@ public class InternalMechanisms {
     }
     public void update() {
         currentVelocity = shootR.getVelocity();
-
+        stage1Current = intakeStage1.getCurrent(CurrentUnit.AMPS);
+        stage2Current = intakeStage2.getCurrent(CurrentUnit.AMPS);
         switch (IOState) {
             case IDLE:
                 intakeStage1.setPower(0);
@@ -117,12 +118,16 @@ public class InternalMechanisms {
                 gate.setPosition(0.6);
                 intakeStage1.setPower(1);
                 intakeStage2.setPower(1);
-                if (stage1Current > CURRENT_LIMIT_AMPS) {
-                    intakeStage1.setPower(0.0);
+                break;
 
-                } else if (stage2Current > CURRENT_LIMIT_AMPS) {
-                    intakeStage2.setPower(0.0);
-                }
+            case FIRST_BALL_STOP:
+                intakeStage2.setPower(0);
+                gate.setPosition(0.6);
+                break;
+
+            case FULL_STOP:
+                intakeStage1.setPower(0);
+                gate.setPosition(0.6);
                 break;
 
             case SHOOT:

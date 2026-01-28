@@ -39,7 +39,7 @@ public class DECODEOPMODE1 extends LinearOpMode {
                 gamepad1.rumble(1000);
                 gamepad2.rumble(1000);
             }
-            if (gamepad2.right_bumper){
+            else if (gamepad2.right_bumper){
                 mechanisms.setState(RoboStates.INTAKE);
             }
             else if (gamepad2.left_bumper){
@@ -55,12 +55,18 @@ public class DECODEOPMODE1 extends LinearOpMode {
             else if (gamepad2.triangleWasPressed()){
                 mechanisms.setState(RoboStates.AUTO_SCORE);
             }
+            else if (mechanisms.getStage2Current()>=mechanisms.getCurrentLimitAmps()){
+                mechanisms.setState(RoboStates.FIRST_BALL_STOP);
+            }
+            else if (mechanisms.getStage1Current()>=mechanisms.getCurrentLimitAmps()){
+                mechanisms.setState(RoboStates.FULL_STOP);
+            }
 
-            if(gamepad1.dpadUpWasPressed()){
+            else if(gamepad2.dpadUpWasPressed()){
                 hoodR.setPosition(0);
                 hoodL.setPosition(0);
             }
-            else if(gamepad1.dpadDownWasPressed()){
+            else if(gamepad2.dpadDownWasPressed()){
                 hoodR.setPosition(0.9);
                 hoodL.setPosition(0.9);
             }
