@@ -15,19 +15,18 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 @Configurable
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(9.838)
-            .forwardZeroPowerAcceleration(-33)
-            .lateralZeroPowerAcceleration(-54)
-            .centripetalScaling(0.0005)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.07,0,0.0085,0.022))
-            .headingPIDFCoefficients(new PIDFCoefficients(0.42, 0, 0.0031, 0.032))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.006, 0.0, 0.00005, 0.6, 0.035));
+            .mass(11.88412);
+            //.forwardZeroPowerAcceleration(-33)
+            //.lateralZeroPowerAcceleration(-54)
+            //.centripetalScaling(0.0005)
+            //.translationalPIDFCoefficients(new PIDFCoefficients(0.07,0,0.0085,0.022))
+            //.headingPIDFCoefficients(new PIDFCoefficients(0.42, 0, 0.0031, 0.032))
+            //.drivePIDFCoefficients(new FilteredPIDFCoefficients(0.006, 0.0, 0.00005, 0.6, 0.035));
 
 
     public static MecanumConstants driveConstants = new MecanumConstants()
-            .maxPower(0.8)
-            .xVelocity(66)
-            .yVelocity(52.5)
+            .xVelocity(80.42785)
+            //.yVelocity(52.5)
             .rightFrontMotorName("fr")
             .rightRearMotorName("br")
             .leftRearMotorName("bl")
@@ -37,12 +36,12 @@ public class Constants {
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
     public static TwoWheelConstants localizerConstants = new TwoWheelConstants()
-            .strafePodX(3.75)
-            .forwardPodY(2.5)
-            .forwardTicksToInches(0.002965778801287011)
-            .strafeTicksToInches(0.002940854923108392)
+            .strafePodX(5.9133)
+            .forwardPodY(4.9370)
+            .forwardTicksToInches(0.002005714155109081)
+            .strafeTicksToInches(0.0019878380712762063)
             .forwardEncoderDirection(Encoder.FORWARD)
-            .strafeEncoderDirection(Encoder.REVERSE)
+            .strafeEncoderDirection(Encoder.FORWARD)
             .forwardEncoder_HardwareMapName("fr")
             .strafeEncoder_HardwareMapName("bl")
             .IMU_HardwareMapName("imu")
