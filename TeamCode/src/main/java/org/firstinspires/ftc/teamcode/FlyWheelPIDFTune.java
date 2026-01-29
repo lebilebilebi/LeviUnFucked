@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class FlyWheelPIDFTune extends OpMode{
     private DcMotorEx shootR = null;
     private DcMotorEx shootL = null;
-    public double  ShootSpeed = 2000;
+    public double  ShootSpeed = 2200;
     public double idle = 900;
     double currentTargVel = ShootSpeed;
     double F = 0;

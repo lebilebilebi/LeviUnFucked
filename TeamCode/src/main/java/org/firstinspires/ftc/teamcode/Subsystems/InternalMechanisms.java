@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
+import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -25,19 +26,49 @@ public class InternalMechanisms {
 
     // 2. Hardware variables
     private ElapsedTime runtime = new ElapsedTime();
+    public DcMotorEx shootR = null;
+    public DcMotorEx shootL = null;
     private DcMotorEx intakeStage1 = null;
     private DcMotorEx intakeStage2 = null;
-    private DcMotorEx shootR = null;
-    private DcMotorEx shootL = null;
     private Servo gate = null;
     private Servo rgbLight;
+    private Servo hoodR = null;
+    private Servo hoodL = null;
     private RoboStates IOState = RoboStates.IDLE;
     private double currentVelocity = 0;
+    private double flywheelVelocity = 0;
+    private double hoodPosition = 0;
     double stage1Current = 0;
     double stage2Current = 0;
     double cycleDuration = 0.7;
+    private double goalDist = 0;
+    private double goalX = 0;
+    private double goalY = 0;
     private ElapsedTime ledTimer = new ElapsedTime();
     private static final double CURRENT_LIMIT_AMPS = 8.5;
+    private static final double MAX_FLYWHEEL_VELOCITY = 2200;
+    private static final double MIN_FLYWHEEL_VELOCITY = 0;
+    private static final double MAX_HOOD_POSITION = 0.9;
+    private static final double MIN_HOOD_POSITION = 0;
+    public static double getHoodAngle(double goalDist) {
+        double rawAngle = (0.00000120563 * Math.pow(goalDist, 3))
+                - (0.000235615 * Math.pow(goalDist, 2))
+                + (0.00615079 * goalDist)
+                + 0.57;
+
+        // Clamps the result to be safe for the servo
+        return MathFunctions.clamp(rawAngle, 0.0, 0.9);
+    }
+    public static double getFlywheelVelocity(double goalDist) {
+        double rawVelocity = (0.000331549 * Math.pow(goalDist, 3))
+                - (0.0542535 * Math.pow(goalDist, 2))
+                + (8.92361 * goalDist)
+                + 1212.0;
+
+        // Clamps the result to be safe for the motor
+        return MathFunctions.clamp(rawVelocity, 0.0, 2200.0);
+    }
+
 
     public InternalMechanisms(HardwareMap hardwareMap) {
 
@@ -47,6 +78,8 @@ public class InternalMechanisms {
         shootL = hardwareMap.get(DcMotorEx.class, "shootL");
         gate = hardwareMap.get(Servo.class, "gate");
         rgbLight = hardwareMap.get(Servo.class, "rgbLight");
+        hoodR = hardwareMap.get(Servo.class, "hoodR");
+        hoodL = hardwareMap.get(Servo.class, "hoodL");
 
         intakeStage1.setDirection(DcMotorEx.Direction.FORWARD);
         intakeStage2.setDirection(DcMotorEx.Direction.REVERSE);
@@ -56,7 +89,7 @@ public class InternalMechanisms {
         intakeStage1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         intakeStage2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
-        PIDFCoefficients pidfCoefficients = new PIDFCoefficients(16, 0, 0, 16);
+        PIDFCoefficients pidfCoefficients = new PIDFCoefficients(19.8, 0, 0, 12.5960);
         shootR.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         shootL.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
@@ -81,6 +114,44 @@ public class InternalMechanisms {
     public double getCurrentLimitAmps() {
         return CURRENT_LIMIT_AMPS;
     }
+    public double getFlywheelVelocity() {
+        return flywheelVelocity;
+    }
+    public void increaseFlywheelVelocity(double increment) {
+        flywheelVelocity = Math.min(flywheelVelocity + increment, MAX_FLYWHEEL_VELOCITY);
+    }
+    public void decreaseFlywheelVelocity(double decrement) {
+        flywheelVelocity = Math.max(flywheelVelocity - decrement, MIN_FLYWHEEL_VELOCITY);
+    }
+    public void setFlywheelVelocity(double velocity) {
+        flywheelVelocity = MathFunctions.clamp(velocity, MIN_FLYWHEEL_VELOCITY, MAX_FLYWHEEL_VELOCITY);
+    }
+    public double getHoodPosition() {
+        return hoodPosition;
+    }
+    public void increaseHoodPosition(double increment) {
+        hoodPosition = Math.min(hoodPosition + increment, MAX_HOOD_POSITION);
+    }
+    public void decreaseHoodPosition(double decrement) {
+        hoodPosition = Math.max(hoodPosition - decrement, MIN_HOOD_POSITION);
+    }
+    public void setHoodPosition(double position) {
+        hoodPosition = MathFunctions.clamp(position, MIN_HOOD_POSITION, MAX_HOOD_POSITION);
+    }
+    public double getGoalDist() {
+        return goalDist;
+    }
+
+    public void setGoalPose(double x, double y) {
+        this.goalX = x;
+        this.goalY = y;
+    }
+
+    public void updateGoalDist(double currentX, double currentY) {
+        double deltaX = goalX - currentX;
+        double deltaY = goalY - currentY;
+        goalDist = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
+    }
 
     private void updateRainbowLED() {
         double time = ledTimer.seconds();
@@ -99,6 +170,13 @@ public class InternalMechanisms {
         currentVelocity = shootR.getVelocity();
         stage1Current = intakeStage1.getCurrent(CurrentUnit.AMPS);
         stage2Current = intakeStage2.getCurrent(CurrentUnit.AMPS);
+
+        // Apply flywheel and hood values
+        shootR.setVelocity(flywheelVelocity);
+        shootL.setVelocity(flywheelVelocity);
+        hoodR.setPosition(hoodPosition);
+        hoodL.setPosition(hoodPosition);
+
         switch (IOState) {
             case IDLE:
                 intakeStage1.setPower(0);
@@ -107,9 +185,6 @@ public class InternalMechanisms {
                 updateRainbowLED();
 
                 gate.setPosition(0.6);
-
-                shootR.setVelocity(0);
-                shootL.setVelocity(0);
                 //center turret
                 //start LED to rainbow
                 break;
@@ -138,9 +213,9 @@ public class InternalMechanisms {
 
             case FAR_SIDE:
                 rgbLight.setPosition(0.280);
-                shootR.setVelocity(1475);
-                shootL.setVelocity(1475);
-                if (currentVelocity>=1475){
+                shootR.setVelocity(2100);
+                shootL.setVelocity(2100);
+                if (currentVelocity>=2100){
                     rgbLight.setPosition(0.5);
                     gate.setPosition(0.2);
                     intakeStage1.setPower(1);

@@ -2,20 +2,18 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Subsystems.DriveMechanisms;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms;
-
-import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms.RoboStates;
 
 
-@TeleOp(name="TELEOP 1", group="Linear OpMode")
-public class DECODEOPMODE1 extends LinearOpMode {
+@TeleOp(name="SHOOTER TUNE", group="Linear OpMode")
+public class SHOOTTUNE extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     InternalMechanisms mechanisms;
     DriveMechanisms drive;
-
 
 
     @Override
@@ -30,43 +28,28 @@ public class DECODEOPMODE1 extends LinearOpMode {
 
         while (opModeIsActive()) { //_______________________________________
             mechanisms.update();
-            if (runtime.time()==1.30){
-                gamepad1.rumble(1000);
-                gamepad2.rumble(1000);
-            }
-            else if (gamepad2.right_bumper){
+
+            if (mechanisms.getStage2Current() >= mechanisms.getCurrentLimitAmps()) {
+                mechanisms.setState(RoboStates.FIRST_BALL_STOP);
+
+            } else if (mechanisms.getStage1Current() >= mechanisms.getCurrentLimitAmps()) {
+                mechanisms.setState(RoboStates.FULL_STOP);
+
+            } else if (gamepad2.right_bumper) {
                 mechanisms.setState(RoboStates.INTAKE);
-            }
-            else if (gamepad2.left_bumper){
+
+            } else if (gamepad2.left_bumper) {
                 mechanisms.setState(RoboStates.IDLE);
 
-            }
-            else if (gamepad2.circleWasPressed()){
-                mechanisms.setState(RoboStates.FAR_SIDE);
-            }
-            else if (gamepad2.crossWasPressed()){
-                mechanisms.setState(RoboStates.CLOSE_SIDE);
-            }
-            else if (gamepad2.triangleWasPressed()){
-                mechanisms.setState(RoboStates.AUTO_SCORE);
-            }
-            else if (mechanisms.getStage2Current()>=mechanisms.getCurrentLimitAmps()){
-                mechanisms.setState(RoboStates.FIRST_BALL_STOP);
-            }
-            else if (mechanisms.getStage1Current()>=mechanisms.getCurrentLimitAmps()){
-                mechanisms.setState(RoboStates.FULL_STOP);
-            }
-            else if(gamepad2.dpadUpWasPressed()){
-                mechanisms.setHoodPosition(0.9);
-            }
-            else if(gamepad2.dpadDownWasPressed()){
-                mechanisms.setHoodPosition(0);
-            }
-            else if(gamepad2.dpadLeftWasPressed()){
-                mechanisms.decreaseFlywheelVelocity(100);
-            }
-            else if(gamepad2.dpadRightWasPressed()){
-                mechanisms.increaseFlywheelVelocity(100);
+            } else if (gamepad2.dpadUpWasPressed()) {
+                mechanisms.increaseFlywheelVelocity(50);
+            } else if (gamepad2.dpadDownWasPressed()) {
+                mechanisms.decreaseFlywheelVelocity(50);
+
+            } else if (gamepad2.dpadLeftWasPressed()) {
+                mechanisms.decreaseHoodPosition(0.05);
+            } else if (gamepad2.dpadRightWasPressed()) {
+                mechanisms.increaseHoodPosition(0.05);
             }
 
             //DRIVE

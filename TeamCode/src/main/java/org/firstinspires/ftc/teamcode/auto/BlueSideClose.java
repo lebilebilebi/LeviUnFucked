@@ -21,6 +21,7 @@ public class BlueSideClose extends OpMode {
     private int pathState;
     double shootWaitTime = 5;
     private final Pose startPose = new Pose(21.45794392523365, 122.61682242990655, Math.toRadians(140)); // Start Pose of robot
+    private final Pose goalPose = new Pose(12, 137, Math.toRadians(140)); // Pose of the goal
     private final Pose scorePose = new Pose(55, 88, Math.toRadians(144)); // Scoring pose
     private final Pose endPose = new Pose(13, 70, Math.toRadians(90)); // Ending pose
     private final Pose turnTo180 = new Pose(55, 84, Math.toRadians(180)); //Turn from preload shoot to face balls for first intake
@@ -218,11 +219,16 @@ public class BlueSideClose extends OpMode {
         follower.update();
         autonomousPathUpdate();
         mechanisms.update();
+
+        // Update distance to goal based on current robot position
+        mechanisms.updateGoalDist(follower.getPose().getX(), follower.getPose().getY());
+
         // Feedback to Driver Hub for debugging
         telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.addData("distance to goal", mechanisms.getGoalDist());
         telemetry.update();
     }
 
@@ -232,6 +238,7 @@ public class BlueSideClose extends OpMode {
     @Override
     public void init() {
         mechanisms = new InternalMechanisms(hardwareMap);
+        mechanisms.setGoalPose(goalPose.getX(), goalPose.getY());
         intake = hardwareMap.get(DcMotorEx.class, "int"); //intake motor init statement
         pathTimer = new Timer();
         opmodeTimer = new Timer();
