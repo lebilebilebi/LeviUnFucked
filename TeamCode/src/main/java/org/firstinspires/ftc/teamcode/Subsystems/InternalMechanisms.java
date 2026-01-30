@@ -18,13 +18,9 @@ public class InternalMechanisms {
         SHOOT,
         FAR_SIDE,
         CLOSE_SIDE,
-        LED_TEST_RAINBOW,
-        LED_TEST_FLASHING,
+        FULL_IDLE,
         AUTO_SCORE,
-        AUTO_SPINUP
     }
-
-    // 2. Hardware variables
     private ElapsedTime runtime = new ElapsedTime();
     public DcMotorEx shootR = null;
     public DcMotorEx shootL = null;
@@ -44,8 +40,10 @@ public class InternalMechanisms {
     private double goalDist = 0;
     private double goalX = 0;
     private double goalY = 0;
-    private ElapsedTime ledTimer = new ElapsedTime();
-    private static final double CURRENT_LIMIT_AMPS = 8.5;
+    private final ElapsedTime ledTimer = new ElapsedTime();
+    private final ElapsedTime gateTimer = new ElapsedTime();
+    private static final double STAGE_ONE_CURRENT_LIMIT = 6.5;
+    private static final double STAGE_TWO_CURRENT_LIMIT = 5.8;
     private static final double MAX_FLYWHEEL_VELOCITY = 2200;
     private static final double MIN_FLYWHEEL_VELOCITY = 0;
     private static final double MAX_HOOD_POSITION = 0.9;
@@ -55,8 +53,6 @@ public class InternalMechanisms {
                 - (0.000235615 * Math.pow(goalDist, 2))
                 + (0.00615079 * goalDist)
                 + 0.57;
-
-        // Clamps the result to be safe for the servo
         return MathFunctions.clamp(rawAngle, 0.0, 0.9);
     }
     public static double getFlywheelVelocity(double goalDist) {
@@ -64,11 +60,8 @@ public class InternalMechanisms {
                 - (0.0542535 * Math.pow(goalDist, 2))
                 + (8.92361 * goalDist)
                 + 1212.0;
-
-        // Clamps the result to be safe for the motor
         return MathFunctions.clamp(rawVelocity, 0.0, 2200.0);
     }
-
 
     public InternalMechanisms(HardwareMap hardwareMap) {
 
@@ -97,8 +90,6 @@ public class InternalMechanisms {
         ledTimer.reset();
     }
 
-
-
     public double getVelocity() {
         return currentVelocity;
     }
@@ -111,8 +102,11 @@ public class InternalMechanisms {
     public double getStage2Current() {
         return stage2Current;
     }
-    public double getCurrentLimitAmps() {
-        return CURRENT_LIMIT_AMPS;
+    public double getStageOneCurrentLimit() {
+        return STAGE_ONE_CURRENT_LIMIT;
+    }
+    public double getStageTwoCurrentLimit() {
+        return STAGE_TWO_CURRENT_LIMIT;
     }
     public double getFlywheelVelocity() {
         return flywheelVelocity;
@@ -141,18 +135,6 @@ public class InternalMechanisms {
     public double getGoalDist() {
         return goalDist;
     }
-
-    public void setGoalPose(double x, double y) {
-        this.goalX = x;
-        this.goalY = y;
-    }
-
-    public void updateGoalDist(double currentX, double currentY) {
-        double deltaX = goalX - currentX;
-        double deltaY = goalY - currentY;
-        goalDist = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
-    }
-
     private void updateRainbowLED() {
         double time = ledTimer.seconds();
         double t = (time % cycleDuration) / cycleDuration;
@@ -165,50 +147,49 @@ public class InternalMechanisms {
         this.IOState = newState;
         runtime.reset();
         ledTimer.reset();
+        gateTimer.reset();
     }
     public void update() {
         currentVelocity = shootR.getVelocity();
         stage1Current = intakeStage1.getCurrent(CurrentUnit.AMPS);
         stage2Current = intakeStage2.getCurrent(CurrentUnit.AMPS);
 
-        // Apply flywheel and hood values
-        shootR.setVelocity(flywheelVelocity);
+        /*shootR.setVelocity(flywheelVelocity);
         shootL.setVelocity(flywheelVelocity);
         hoodR.setPosition(hoodPosition);
-        hoodL.setPosition(hoodPosition);
+        hoodL.setPosition(hoodPosition);*/
 
         switch (IOState) {
             case IDLE:
                 intakeStage1.setPower(0);
                 intakeStage2.setPower(0);
-
+                shootR.setVelocity(1600);
+                shootL.setVelocity(1600);
                 updateRainbowLED();
-
-                gate.setPosition(0.6);
+                gate.setPosition(0.2);
                 //center turret
                 //start LED to rainbow
                 break;
 
-            case INTAKE:
-                gate.setPosition(0.6);
-                intakeStage1.setPower(1);
-                intakeStage2.setPower(1);
-                break;
-
-            case FIRST_BALL_STOP:
-                intakeStage2.setPower(0);
-                gate.setPosition(0.6);
-                break;
-
-            case FULL_STOP:
+            case FULL_IDLE:
                 intakeStage1.setPower(0);
-                gate.setPosition(0.6);
+                intakeStage2.setPower(0);
+                shootR.setVelocity(0);
+                shootL.setVelocity(0);
+                rgbLight.setPosition(0.280);
+                gate.setPosition(0.2);
                 break;
 
-            case SHOOT:
+            case INTAKE:
                 gate.setPosition(0.2);
                 intakeStage1.setPower(1);
                 intakeStage2.setPower(1);
+                if (stage2Current >= STAGE_TWO_CURRENT_LIMIT) {
+                    intakeStage2.setPower(0);
+                }
+                else if (stage1Current>=STAGE_ONE_CURRENT_LIMIT){
+                    intakeStage1.setPower(0);
+                }
                 break;
 
             case FAR_SIDE:
@@ -225,40 +206,28 @@ public class InternalMechanisms {
 
             case CLOSE_SIDE:
                 rgbLight.setPosition(0.280);
-                shootR.setVelocity(1300);
-                shootL.setVelocity(1300);
-                if (currentVelocity>=1300){
+                hoodR.setPosition(0.45);
+                hoodL.setPosition(0.45);
+                shootR.setVelocity(1500);
+                shootL.setVelocity(1500);
+                if (currentVelocity>=1500){
                     rgbLight.setPosition(0.5);
-                    gate.setPosition(0.2);
+                    gate.setPosition(0.64);
                     intakeStage1.setPower(1);
                     intakeStage2.setPower(1);}
                 break;
 
             case AUTO_SCORE:
-                shootR.setVelocity(1150);
-                shootL.setVelocity(1150);
-                if (currentVelocity>=1150){
+                shootR.setVelocity(1600);
+                shootL.setVelocity(1600);
+                if (currentVelocity>=1600) {
                     rgbLight.setPosition(0.5);
-                    gate.setPosition(0.2);
-                    intakeStage1.setPower(1);
-                    intakeStage2.setPower(1);}
-                break;
-
-            case AUTO_SPINUP:
-                intakeStage1.setPower(1);
-                intakeStage2.setPower(1);
-                rgbLight.setPosition(0.280);
-                gate.setPosition(0.6);
-                shootR.setVelocity(1200);
-                shootL.setVelocity(1200);
-                break;
-
-            case LED_TEST_RAINBOW:
-                gate.setPosition(0.2);
-                break;
-
-            case LED_TEST_FLASHING:
-                gate.setPosition(0.6);
+                    gate.setPosition(0.64);
+                    if (gateTimer.seconds() >= 0.18) {
+                        intakeStage1.setPower(1);
+                        intakeStage2.setPower(1);
+                    }
+                }
                 break;
         }
     }

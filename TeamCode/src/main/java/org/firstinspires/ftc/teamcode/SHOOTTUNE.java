@@ -1,3 +1,4 @@
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -29,10 +30,10 @@ public class SHOOTTUNE extends LinearOpMode {
         while (opModeIsActive()) { //_______________________________________
             mechanisms.update();
 
-            if (mechanisms.getStage2Current() >= mechanisms.getCurrentLimitAmps()) {
+            if (mechanisms.getStage2Current() >= mechanisms.getStageTwoCurrentLimit()) {
                 mechanisms.setState(RoboStates.FIRST_BALL_STOP);
 
-            } else if (mechanisms.getStage1Current() >= mechanisms.getCurrentLimitAmps()) {
+            } else if (mechanisms.getStage1Current() >= mechanisms.getStageOneCurrentLimit()) {
                 mechanisms.setState(RoboStates.FULL_STOP);
 
             } else if (gamepad2.right_bumper) {
@@ -45,12 +46,16 @@ public class SHOOTTUNE extends LinearOpMode {
                 mechanisms.increaseFlywheelVelocity(50);
             } else if (gamepad2.dpadDownWasPressed()) {
                 mechanisms.decreaseFlywheelVelocity(50);
-
             } else if (gamepad2.dpadLeftWasPressed()) {
                 mechanisms.decreaseHoodPosition(0.05);
             } else if (gamepad2.dpadRightWasPressed()) {
                 mechanisms.increaseHoodPosition(0.05);
+            } else if (gamepad1.dpadRightWasPressed()) {
+                mechanisms.setState(RoboStates.IDLE);
+            } else if (gamepad1.dpadDownWasPressed()) {
+                mechanisms.setState(RoboStates.SHOOT);
             }
+
 
             //DRIVE
             double axial = -gamepad1.left_stick_y;

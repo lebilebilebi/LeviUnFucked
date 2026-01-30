@@ -21,7 +21,7 @@ public class Constants {
             .centripetalScaling(0.0005)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.065,0,0.008,0.023))
             .headingPIDFCoefficients(new PIDFCoefficients(0.4, 0, 0.002, 0.03))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0.0, 0.0001, 0.0, 0.035));
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01, 0.0, 0.0001, 0.0, 0.035));
 
 
     public static MecanumConstants driveConstants = new MecanumConstants()
@@ -52,7 +52,7 @@ public class Constants {
                     )
             );
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.5, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 0.85, 1);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)

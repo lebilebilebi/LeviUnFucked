@@ -45,7 +45,7 @@ public class DriveLine2 extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                mechanisms.setState(RoboStates.AUTO_SPINUP);
+                mechanisms.setState(RoboStates.IDLE);
                 follower.followPath(driveToScore);
                 setPathState(1);
                 break;

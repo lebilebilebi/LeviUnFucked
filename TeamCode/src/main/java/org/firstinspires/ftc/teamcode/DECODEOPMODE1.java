@@ -1,3 +1,4 @@
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -17,7 +18,6 @@ public class DECODEOPMODE1 extends LinearOpMode {
     DriveMechanisms drive;
 
 
-
     @Override
     public void runOpMode() { //_______________________________________
         mechanisms = new InternalMechanisms(hardwareMap);
@@ -28,54 +28,23 @@ public class DECODEOPMODE1 extends LinearOpMode {
 
         waitForStart(); //_______________________________________
 
-        while (opModeIsActive()) { //_______________________________________
+        while (opModeIsActive()) {
             mechanisms.update();
-            if (runtime.time()==1.30){
-                gamepad1.rumble(1000);
-                gamepad2.rumble(1000);
-            }
-            else if (gamepad2.right_bumper){
-                mechanisms.setState(RoboStates.INTAKE);
-            }
-            else if (gamepad2.left_bumper){
-                mechanisms.setState(RoboStates.IDLE);
-
-            }
-            else if (gamepad2.circleWasPressed()){
-                mechanisms.setState(RoboStates.FAR_SIDE);
-            }
-            else if (gamepad2.crossWasPressed()){
-                mechanisms.setState(RoboStates.CLOSE_SIDE);
-            }
-            else if (gamepad2.triangleWasPressed()){
+            if (gamepad2.crossWasPressed()) {
                 mechanisms.setState(RoboStates.AUTO_SCORE);
+            } else if (gamepad2.right_bumper) {
+                mechanisms.setState(RoboStates.INTAKE);
+            } else if (gamepad2.left_bumper){
+                mechanisms.setState(RoboStates.IDLE);
+            } else if (gamepad2.left_bumper && gamepad2.right_bumper) {
+                mechanisms.setState(RoboStates.FULL_IDLE);
             }
-            else if (mechanisms.getStage2Current()>=mechanisms.getCurrentLimitAmps()){
-                mechanisms.setState(RoboStates.FIRST_BALL_STOP);
-            }
-            else if (mechanisms.getStage1Current()>=mechanisms.getCurrentLimitAmps()){
-                mechanisms.setState(RoboStates.FULL_STOP);
-            }
-            else if(gamepad2.dpadUpWasPressed()){
-                mechanisms.setHoodPosition(0.9);
-            }
-            else if(gamepad2.dpadDownWasPressed()){
-                mechanisms.setHoodPosition(0);
-            }
-            else if(gamepad2.dpadLeftWasPressed()){
-                mechanisms.decreaseFlywheelVelocity(100);
-            }
-            else if(gamepad2.dpadRightWasPressed()){
-                mechanisms.increaseFlywheelVelocity(100);
-            }
-
-            //DRIVE
-            double axial = -gamepad1.left_stick_y;
-            double lateral = gamepad1.left_stick_x;
-            double yaw = gamepad1.right_stick_x;
-
+            double axial = -gamepad2.left_stick_y;
+            double lateral = gamepad2.left_stick_x;
+            double yaw = gamepad2.right_stick_x;
             drive.drive(axial, lateral, yaw);
-            //TELEMETRY DATA
+
+            // TELEMETRY DATA
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("FLYWHEEL VELOCITY", mechanisms.getFlywheelVelocity());
             telemetry.addData("HOOD POSITION", mechanisms.getHoodPosition());
