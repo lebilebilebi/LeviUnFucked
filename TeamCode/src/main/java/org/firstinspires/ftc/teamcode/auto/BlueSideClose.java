@@ -206,7 +206,6 @@ public class BlueSideClose extends OpMode {
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
-        actionTimer.resetTimer();
     }
 
     @Override
