@@ -51,7 +51,7 @@ public class DriveLine extends OpMode {
                 break;
             case 1:
                 if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.FAR_SIDE);
+                    mechanisms.setState(RoboStates.AUTO_SCORE);
                     if (pathTimer.getElapsedTimeSeconds() > 6) {
                         mechanisms.setState(RoboStates.IDLE);
                         follower.followPath(driveToEnd);

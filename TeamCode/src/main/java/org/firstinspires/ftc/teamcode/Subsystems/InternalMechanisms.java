@@ -12,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 public class InternalMechanisms {
     public enum RoboStates {
         IDLE,
+        SPIN_UP,
         INTAKE,
         FIRST_BALL_STOP,
         FULL_STOP,
@@ -37,17 +38,31 @@ public class InternalMechanisms {
     double stage1Current = 0;
     double stage2Current = 0;
     double cycleDuration = 0.7;
+    private int shotsRemaining = 0;
     private double goalDist = 0;
     private double goalX = 0;
     private double goalY = 0;
+    public boolean shotsFired = false;
     private final ElapsedTime ledTimer = new ElapsedTime();
-    private final ElapsedTime gateTimer = new ElapsedTime();
-    private static final double STAGE_ONE_CURRENT_LIMIT = 6.5;
-    private static final double STAGE_TWO_CURRENT_LIMIT = 5.8;
+    public ElapsedTime gateTimer = new ElapsedTime();
+    private ElapsedTime stateTimer = new ElapsedTime();
+    private boolean gateOpened = false;
+    private boolean stage1Stopped = false;
+    private boolean stage2Stopped = false;
+    private ElapsedTime intakeGraceTimer = new ElapsedTime(); // Timer for intake startup grace period
+
+    private static final double STAGE_ONE_CURRENT_LIMIT = 5.6;
+    private static final double STAGE_TWO_CURRENT_LIMIT = 5.5;
+    private static final double INTAKE_GRACE_PERIOD = 0.3; // Adjustable grace period in seconds
     private static final double MAX_FLYWHEEL_VELOCITY = 2200;
     private static final double MIN_FLYWHEEL_VELOCITY = 0;
     private static final double MAX_HOOD_POSITION = 0.9;
     private static final double MIN_HOOD_POSITION = 0;
+    private double GATE_OPEN= 0.64;
+    private double GATE_CLOSED= 0.2;
+    private double GATE_OPEN_TIME= 0.18;
+    private double GATE_CLOSE_TIME = 0.18;
+    private static final double AUTO_SCORE_VELOCITY_THRESHOLD = 1500; // Add threshold constant
     public static double getHoodAngle(double goalDist) {
         double rawAngle = (0.00000120563 * Math.pow(goalDist, 3))
                 - (0.000235615 * Math.pow(goalDist, 2))
@@ -88,10 +103,16 @@ public class InternalMechanisms {
 
         rgbLight.setPosition(0);
         ledTimer.reset();
+
+        IOState = RoboStates.IDLE;
     }
 
     public double getVelocity() {
         return currentVelocity;
+    }
+
+    public boolean isShotsFired(){
+        return shotsFired;
     }
     public double getLedColor() {
         return rgbLight.getPosition();
@@ -148,6 +169,10 @@ public class InternalMechanisms {
         runtime.reset();
         ledTimer.reset();
         gateTimer.reset();
+        gateOpened = false;
+        stage1Stopped = false;
+        stage2Stopped = false;
+        intakeGraceTimer.reset(); // Reset grace timer when state changes
     }
     public void update() {
         currentVelocity = shootR.getVelocity();
@@ -182,13 +207,29 @@ public class InternalMechanisms {
 
             case INTAKE:
                 gate.setPosition(0.2);
-                intakeStage1.setPower(1);
-                intakeStage2.setPower(1);
-                if (stage2Current >= STAGE_TWO_CURRENT_LIMIT) {
-                    intakeStage2.setPower(0);
+                rgbLight.setPosition(0.280);
+                // Only check current limits after grace period has passed
+                if (intakeGraceTimer.seconds() > INTAKE_GRACE_PERIOD) {
+                    if (stage1Current >= STAGE_ONE_CURRENT_LIMIT) {
+                        stage1Stopped = true;
+                    }
+                    if (stage2Current >= STAGE_TWO_CURRENT_LIMIT) {
+                        stage2Stopped = true;
+                        rgbLight.setPosition(0.5);
+                    }
                 }
-                else if (stage1Current>=STAGE_ONE_CURRENT_LIMIT){
+
+                // Set motor powers based on flags
+                if (stage1Stopped) {
                     intakeStage1.setPower(0);
+                } else {
+                    intakeStage1.setPower(1);
+                }
+
+                if (stage2Stopped) {
+                    intakeStage2.setPower(0);
+                } else {
+                    intakeStage2.setPower(1);
                 }
                 break;
 
@@ -220,10 +261,16 @@ public class InternalMechanisms {
             case AUTO_SCORE:
                 shootR.setVelocity(1600);
                 shootL.setVelocity(1600);
-                if (currentVelocity>=1600) {
+                // Use lower threshold to account for velocity fluctuation
+                // Also use time-based fallback to ensure scoring starts
+                if (currentVelocity >= AUTO_SCORE_VELOCITY_THRESHOLD || gateTimer.seconds() > 0.5) {
                     rgbLight.setPosition(0.5);
                     gate.setPosition(0.64);
-                    if (gateTimer.seconds() >= 0.18) {
+                    if (!gateOpened) {
+                        gateTimer.reset();
+                        gateOpened = true;
+                    }
+                    if (gateOpened && gateTimer.seconds() > 0.18) {
                         intakeStage1.setPower(1);
                         intakeStage2.setPower(1);
                     }
