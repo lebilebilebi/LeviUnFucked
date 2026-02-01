@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms.RoboStates;
+import org.firstinspires.ftc.teamcode.Subsystems.RobotState;
 
 
 @TeleOp(name="TELEOP 1", group="Linear OpMode")
@@ -23,6 +24,7 @@ public class DECODEOPMODE1 extends LinearOpMode {
         mechanisms = new InternalMechanisms(hardwareMap);
         drive = new DriveMechanisms(hardwareMap);
         telemetry.addData("Status", "GOOOOOOOOOOOOOOOOOO!!!!!!!!!!!!!");
+        RobotState.getInstance().setAlliance(true); // Blue alliance
         telemetry.update();
 
 
@@ -30,7 +32,6 @@ public class DECODEOPMODE1 extends LinearOpMode {
 
         while (opModeIsActive()) {
             mechanisms.update();
-            mechanisms.updateGoalDistance();
 
             if (gamepad2.crossWasPressed()) {
                 mechanisms.setState(RoboStates.AUTO_SCORE);
