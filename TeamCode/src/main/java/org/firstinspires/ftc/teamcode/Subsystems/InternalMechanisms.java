@@ -62,7 +62,9 @@ public class InternalMechanisms {
     private double GATE_CLOSED= 0.2;
     private double GATE_OPEN_TIME= 0.18;
     private double GATE_CLOSE_TIME = 0.18;
-    private static final double AUTO_SCORE_VELOCITY_THRESHOLD = 1500; // Add threshold constant
+    private static final double AUTO_SCORE_VELOCITY_THRESHOLD = 1510; // Add threshold constant
+    private static final double FAR_AUTO_SCORE_VELOCITY_THRESHOLD = 2100; // Add threshold constant
+
     public static double getHoodAngle(double goalDist) {
         double rawAngle = (0.00000120563 * Math.pow(goalDist, 3))
                 - (0.000235615 * Math.pow(goalDist, 2))
@@ -196,6 +198,9 @@ public class InternalMechanisms {
                 //start LED to rainbow
                 break;
 
+            case SHOOT:
+                intakeStage2.setPower(1);
+                intakeStage1.setPower(1);
             case FULL_IDLE:
                 intakeStage1.setPower(0);
                 intakeStage2.setPower(0);
@@ -233,18 +238,6 @@ public class InternalMechanisms {
                 }
                 break;
 
-            case FAR_SIDE:
-                rgbLight.setPosition(0.280);
-                shootR.setVelocity(2100);
-                shootL.setVelocity(2100);
-                if (currentVelocity>=2100){
-                    rgbLight.setPosition(0.5);
-                    gate.setPosition(0.2);
-                    intakeStage1.setPower(1);
-                    intakeStage2.setPower(1);
-                }
-                break;
-
             case CLOSE_SIDE:
                 rgbLight.setPosition(0.280);
                 hoodR.setPosition(0.45);
@@ -259,11 +252,34 @@ public class InternalMechanisms {
                 break;
 
             case AUTO_SCORE:
-                shootR.setVelocity(1600);
-                shootL.setVelocity(1600);
+                shootR.setVelocity(1490);
+                shootL.setVelocity(1490);
+                hoodR.setPosition(0.5);
+                hoodL.setPosition(0.5);
                 // Use lower threshold to account for velocity fluctuation
                 // Also use time-based fallback to ensure scoring starts
                 if (currentVelocity >= AUTO_SCORE_VELOCITY_THRESHOLD || gateTimer.seconds() > 0.5) {
+                    rgbLight.setPosition(0.5);
+                    gate.setPosition(0.64);
+                    if (!gateOpened) {
+                        gateTimer.reset();
+                        gateOpened = true;
+                    }
+                    if (gateOpened && gateTimer.seconds() > 0.18) {
+                        intakeStage1.setPower(1);
+                        intakeStage2.setPower(1);
+                    }
+                }
+                break;
+
+            case FAR_SIDE:
+                shootR.setVelocity(2100);
+                shootL.setVelocity(2100);
+                hoodR.setPosition(0.0);
+                hoodL.setPosition(0.0);
+                // Use lower threshold to account for velocity fluctuation
+                // Also use time-based fallback to ensure scoring starts
+                if (currentVelocity >= FAR_AUTO_SCORE_VELOCITY_THRESHOLD || gateTimer.seconds() > 0.5) {
                     rgbLight.setPosition(0.5);
                     gate.setPosition(0.64);
                     if (!gateOpened) {

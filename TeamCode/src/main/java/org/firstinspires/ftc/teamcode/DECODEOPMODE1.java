@@ -32,6 +32,8 @@ public class DECODEOPMODE1 extends LinearOpMode {
             mechanisms.update();
             if (gamepad2.crossWasPressed()) {
                 mechanisms.setState(RoboStates.AUTO_SCORE);
+            }else if (gamepad2.squareWasPressed()) {
+                    mechanisms.setState(RoboStates.FAR_SIDE);
             } else if (gamepad2.right_bumper) {
                 mechanisms.setState(RoboStates.INTAKE);
             } else if (gamepad2.left_bumper){
@@ -39,9 +41,9 @@ public class DECODEOPMODE1 extends LinearOpMode {
             } else if (gamepad2.left_bumper && gamepad2.right_bumper) {
                 mechanisms.setState(RoboStates.FULL_IDLE);
             }
-            double axial = -gamepad2.left_stick_y;
-            double lateral = gamepad2.left_stick_x;
-            double yaw = gamepad2.right_stick_x;
+            double axial = -gamepad1.left_stick_y;
+            double lateral = gamepad1.left_stick_x;
+            double yaw = gamepad1.right_stick_x;
             drive.drive(axial, lateral, yaw);
 
             // TELEMETRY DATA

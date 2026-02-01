@@ -29,18 +29,11 @@ public class SHOOTTUNE extends LinearOpMode {
 
         while (opModeIsActive()) { //_______________________________________
             mechanisms.update();
-
-            if (mechanisms.getStage2Current() >= mechanisms.getStageTwoCurrentLimit()) {
-                mechanisms.setState(RoboStates.FIRST_BALL_STOP);
-
-            } else if (mechanisms.getStage1Current() >= mechanisms.getStageOneCurrentLimit()) {
-                mechanisms.setState(RoboStates.FULL_STOP);
-
-            } else if (gamepad2.right_bumper) {
+              if (gamepad2.right_bumper) {
                 mechanisms.setState(RoboStates.INTAKE);
 
             } else if (gamepad2.left_bumper) {
-                mechanisms.setState(RoboStates.IDLE);
+                mechanisms.setState(RoboStates.FULL_IDLE);
 
             } else if (gamepad2.dpadUpWasPressed()) {
                 mechanisms.increaseFlywheelVelocity(50);

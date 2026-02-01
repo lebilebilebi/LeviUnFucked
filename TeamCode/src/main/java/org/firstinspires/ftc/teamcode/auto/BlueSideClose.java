@@ -20,20 +20,20 @@ public class BlueSideClose extends OpMode {
     private Timer pathTimer, actionTimer, opmodeTimer, scoreTimer; // Add scoreTimer
     private int pathState;
     private boolean scoringStarted = false;
-    private static final double SCORE_DURATION = 1; // Scoring time constant
+    private static final double SCORE_DURATION = 1.2; // Scoring time constant
     double shootWaitTime = 1;
     private final Pose startPose = new Pose(25, 117, Math.toRadians(144)); // Start Pose of robot
     private final Pose goalPose = new Pose(12, 137, Math.toRadians(140)); // Pose of the goal
-    private final Pose scorePose = new Pose(60, 84, Math.toRadians(139)); // Scoring pose
-    private final Pose endPose = new Pose(13, 70, Math.toRadians(90)); // Ending pose
+    private final Pose scorePose = new Pose(60, 84, Math.toRadians(140)); // Scoring pose
+    private final Pose endPose = new Pose(20, 70, Math.toRadians(90)); // Ending pose
     private final Pose turn = new Pose(58, 82, Math.toRadians(180)); //Turn from preload shoot to face balls for first intake
-    private final Pose intake1 = new Pose(26, 82, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
-    private final Pose intakeStart2 = new Pose(55, 60, Math.toRadians(180)); // Drive to second line
-    private final Pose intake2 = new Pose(26, 60, Math.toRadians(180)); // Intake along second line
-    private final Pose intakeStart3 = new Pose(55, 37, Math.toRadians(180)); // Drive to third line
-    private final Pose intake3 = new Pose(26, 37, Math.toRadians(180)); // Intake along third line
+    private final Pose intake1 = new Pose(32, 82, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
+    private final Pose intakeStart2 = new Pose(55, 61, Math.toRadians(180)); // Drive to second line
+    private final Pose intake2 = new Pose(27, 59, Math.toRadians(180)); // Intake along second line
+    private final Pose intakeStart3 = new Pose(55, 39, Math.toRadians(180)); // Drive to third line
+    private final Pose intake3 = new Pose(27, 39, Math.toRadians(180)); // Intake along third line
 
-    private PathChain scorePreload, driveToEnd, alignToIntake1, intakePath1, score1, drive2, intakePath2, score2, drive3, intakePath3, score3;
+    private PathChain scorePreload, driveToEnd, alignToIntake1, intakePath1, avoid, score1, drive2, intakePath2, score2, drive3, intakePath3, score3;
 
     public void buildPaths() {
         scorePreload = follower.pathBuilder()
@@ -66,9 +66,14 @@ public class BlueSideClose extends OpMode {
                 .setLinearHeadingInterpolation(intakeStart2.getHeading(), intake2.getHeading())
                 .build();
 
+        avoid = follower.pathBuilder()
+                .addPath(new BezierLine(intake2, intakeStart2))
+                .setLinearHeadingInterpolation(intake2.getHeading(), intakeStart2.getHeading())
+                .build();
+
         score2 = follower.pathBuilder()
-                .addPath(new BezierLine(intake2, scorePose))
-                .setLinearHeadingInterpolation(intake2.getHeading(), scorePose.getHeading())
+                .addPath(new BezierLine(intakeStart2, scorePose))
+                .setLinearHeadingInterpolation(intakeStart2.getHeading(), scorePose.getHeading())
                 .build();
 
         drive3 = follower.pathBuilder()
@@ -157,12 +162,20 @@ public class BlueSideClose extends OpMode {
             case 6:
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.IDLE);
-                    follower.followPath(score2, true); // holdEnd = true
+                    follower.followPath(avoid);
                     setPathState(7);
                 }
                 break;
 
             case 7:
+                if (!follower.isBusy()) {
+                    mechanisms.setState(RoboStates.IDLE);
+                    follower.followPath(score2, true); // holdEnd = true
+                    setPathState(8);
+                }
+                break;
+
+            case 8:
                 if (!follower.isBusy()) {
                     if (!scoringStarted) {
                         mechanisms.setState(RoboStates.AUTO_SCORE);
@@ -172,28 +185,28 @@ public class BlueSideClose extends OpMode {
                     if (scoreTimer.getElapsedTimeSeconds() > SCORE_DURATION) {
                         mechanisms.setState(RoboStates.IDLE);
                         follower.followPath(drive3);
-                        setPathState(8);
+                        setPathState(9);
                     }
-                }
-                break;
-
-            case 8:
-                if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.INTAKE);
-                    follower.followPath(intakePath3, 0.5, false);
-                    setPathState(9);
                 }
                 break;
 
             case 9:
                 if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.IDLE);
-                    follower.followPath(score3, true); // holdEnd = true
+                    mechanisms.setState(RoboStates.INTAKE);
+                    follower.followPath(intakePath3, 0.5, false);
                     setPathState(10);
                 }
                 break;
 
             case 10:
+                if (!follower.isBusy()) {
+                    mechanisms.setState(RoboStates.IDLE);
+                    follower.followPath(score3, true); // holdEnd = true
+                    setPathState(11);
+                }
+                break;
+
+            case 11:
                 if (!follower.isBusy()) {
                     if (!scoringStarted) {
                         mechanisms.setState(RoboStates.AUTO_SCORE);
