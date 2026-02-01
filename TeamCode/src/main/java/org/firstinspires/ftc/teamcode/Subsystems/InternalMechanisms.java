@@ -80,6 +80,29 @@ public class InternalMechanisms {
         return MathFunctions.clamp(rawVelocity, 0.0, 2200.0);
     }
 
+    /**
+     * Updates the goal distance based on robot's current position from RobotState
+     */
+    public void updateGoalDistance() {
+        this.goalDist = RobotState.getInstance().getDistanceToGoal();
+    }
+
+    /**
+     * Gets the calculated flywheel velocity based on current distance to goal
+     */
+    public double getCalculatedFlywheelVelocity() {
+        updateGoalDistance();
+        return getFlywheelVelocity(goalDist);
+    }
+
+    /**
+     * Gets the calculated hood angle based on current distance to goal
+     */
+    public double getCalculatedHoodAngle() {
+        updateGoalDistance();
+        return getHoodAngle(goalDist);
+    }
+
     public InternalMechanisms(HardwareMap hardwareMap) {
 
         intakeStage1 = hardwareMap.get(DcMotorEx.class, "int1");
@@ -180,27 +203,30 @@ public class InternalMechanisms {
         currentVelocity = shootR.getVelocity();
         stage1Current = intakeStage1.getCurrent(CurrentUnit.AMPS);
         stage2Current = intakeStage2.getCurrent(CurrentUnit.AMPS);
-
-        /*shootR.setVelocity(flywheelVelocity);
-        shootL.setVelocity(flywheelVelocity);
-        hoodR.setPosition(hoodPosition);
-        hoodL.setPosition(hoodPosition);*/
-
+        updateGoalDistance();
         switch (IOState) {
             case IDLE:
                 intakeStage1.setPower(0);
                 intakeStage2.setPower(0);
-                shootR.setVelocity(1600);
-                shootL.setVelocity(1600);
+
+                // Continuously update flywheel velocity and hood angle based on distance
+                double idleVelocity = getCalculatedFlywheelVelocity();
+                double idleHoodAngle = getCalculatedHoodAngle();
+
+                shootR.setVelocity(idleVelocity);
+                shootL.setVelocity(idleVelocity);
+                hoodR.setPosition(idleHoodAngle);
+                hoodL.setPosition(idleHoodAngle);
+
                 updateRainbowLED();
                 gate.setPosition(0.2);
-                //center turret
-                //start LED to rainbow
                 break;
 
             case SHOOT:
                 intakeStage2.setPower(1);
                 intakeStage1.setPower(1);
+                break;
+
             case FULL_IDLE:
                 intakeStage1.setPower(0);
                 intakeStage2.setPower(0);
@@ -213,6 +239,16 @@ public class InternalMechanisms {
             case INTAKE:
                 gate.setPosition(0.2);
                 rgbLight.setPosition(0.280);
+
+                // Keep flywheel and hood updated during intake too
+                double intakeVelocity = getCalculatedFlywheelVelocity();
+                double intakeHoodAngle = getCalculatedHoodAngle();
+
+                shootR.setVelocity(intakeVelocity);
+                shootL.setVelocity(intakeVelocity);
+                hoodR.setPosition(intakeHoodAngle);
+                hoodL.setPosition(intakeHoodAngle);
+
                 // Only check current limits after grace period has passed
                 if (intakeGraceTimer.seconds() > INTAKE_GRACE_PERIOD) {
                     if (stage1Current >= STAGE_ONE_CURRENT_LIMIT) {
@@ -238,48 +274,24 @@ public class InternalMechanisms {
                 }
                 break;
 
-            case CLOSE_SIDE:
-                rgbLight.setPosition(0.280);
-                hoodR.setPosition(0.45);
-                hoodL.setPosition(0.45);
-                shootR.setVelocity(1500);
-                shootL.setVelocity(1500);
-                if (currentVelocity>=1500){
-                    rgbLight.setPosition(0.5);
-                    gate.setPosition(0.64);
-                    intakeStage1.setPower(1);
-                    intakeStage2.setPower(1);}
-                break;
-
             case AUTO_SCORE:
-                shootR.setVelocity(1490);
-                shootL.setVelocity(1490);
-                hoodR.setPosition(0.5);
-                hoodL.setPosition(0.5);
-                // Use lower threshold to account for velocity fluctuation
-                // Also use time-based fallback to ensure scoring starts
-                if (currentVelocity >= AUTO_SCORE_VELOCITY_THRESHOLD || gateTimer.seconds() > 0.5) {
-                    rgbLight.setPosition(0.5);
-                    gate.setPosition(0.64);
-                    if (!gateOpened) {
-                        gateTimer.reset();
-                        gateOpened = true;
-                    }
-                    if (gateOpened && gateTimer.seconds() > 0.18) {
-                        intakeStage1.setPower(1);
-                        intakeStage2.setPower(1);
-                    }
-                }
-                break;
+                // Get calculated values based on distance to goal
+                double calculatedVelocity = getCalculatedFlywheelVelocity();
+                double calculatedHoodAngle = getCalculatedHoodAngle();
 
-            case FAR_SIDE:
-                shootR.setVelocity(2100);
-                shootL.setVelocity(2100);
-                hoodR.setPosition(0.0);
-                hoodL.setPosition(0.0);
-                // Use lower threshold to account for velocity fluctuation
-                // Also use time-based fallback to ensure scoring starts
-                if (currentVelocity >= FAR_AUTO_SCORE_VELOCITY_THRESHOLD || gateTimer.seconds() > 0.5) {
+                // Set flywheel velocity (TPS) - should already be near target from IDLE/INTAKE
+                shootR.setVelocity(calculatedVelocity);
+                shootL.setVelocity(calculatedVelocity);
+
+                // Set hood angle (0 = most angle, 0.9 = lowest angle)
+                hoodR.setPosition(calculatedHoodAngle);
+                hoodL.setPosition(calculatedHoodAngle);
+
+                // Calculate threshold as percentage of target velocity
+                double velocityThreshold = calculatedVelocity * 0.95;
+
+                // Flywheels should already be at speed, but check anyway with time fallback
+                if (currentVelocity >= velocityThreshold || gateTimer.seconds() > 0.3) {
                     rgbLight.setPosition(0.5);
                     gate.setPosition(0.64);
                     if (!gateOpened) {

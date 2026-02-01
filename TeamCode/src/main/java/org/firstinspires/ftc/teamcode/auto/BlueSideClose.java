@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms.RoboStates;
+import org.firstinspires.ftc.teamcode.Subsystems.RobotState;
 
 
 @Autonomous(name = "BLUE 12 BALL: CLOSE START", group = "Auto")
@@ -232,14 +233,21 @@ public class BlueSideClose extends OpMode {
     @Override
     public void loop() {
         follower.update();
+
+        // Update robot state with current pose for distance calculations
+        RobotState.getInstance().setPose(follower.getPose());
+
         autonomousPathUpdate();
         mechanisms.update();
-
+        mechanisms.updateGoalDistance();
         telemetry.addData("path state", pathState);
         telemetry.addData("scoringStarted", scoringStarted);
         telemetry.addData("flywheel velocity", mechanisms.getVelocity());
+        telemetry.addData("goal distance", mechanisms.getGoalDist());
+        telemetry.addData("calculated flywheel vel", mechanisms.getCalculatedFlywheelVelocity());
+        telemetry.addData("calculated hood angle", mechanisms.getCalculatedHoodAngle());
         telemetry.addData("gateTimer", mechanisms.gateTimer.seconds());
-        telemetry.addData("scoreTimer", scoreTimer.getElapsedTimeSeconds()); // Add this
+        telemetry.addData("scoreTimer", scoreTimer.getElapsedTimeSeconds());
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
@@ -253,12 +261,19 @@ public class BlueSideClose extends OpMode {
     public void init() {
         mechanisms = new InternalMechanisms(hardwareMap);
         pathTimer = new Timer();
-        scoreTimer = new Timer(); // Initialize scoreTimer
+        scoreTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
         follower = Constants.createFollower(hardwareMap);
+
+        // Set alliance color for goal distance calculations
+        RobotState.getInstance().setAlliance(true); // Blue alliance
+
         buildPaths();
         follower.setStartingPose(startPose);
+
+        // Initialize robot state with starting pose
+        RobotState.getInstance().setPose(startPose);
     }
 
     /**

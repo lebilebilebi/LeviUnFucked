@@ -30,6 +30,8 @@ public class DECODEOPMODE1 extends LinearOpMode {
 
         while (opModeIsActive()) {
             mechanisms.update();
+            mechanisms.updateGoalDistance();
+
             if (gamepad2.crossWasPressed()) {
                 mechanisms.setState(RoboStates.AUTO_SCORE);
             }else if (gamepad2.squareWasPressed()) {
