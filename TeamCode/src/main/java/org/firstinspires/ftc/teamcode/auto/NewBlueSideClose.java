@@ -8,14 +8,12 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms.RoboStates;
-import org.firstinspires.ftc.teamcode.Subsystems.RobotState;
 
 
-@Autonomous(name = "BLUE 12 BALL: CLOSE START", group = "Auto")
-public class BlueSideClose extends OpMode {
+@Autonomous(name = "NEW BLUE 12 BALL: CLOSE START", group = "NEW Auto")
+public class NewBlueSideClose extends OpMode {
     InternalMechanisms mechanisms;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer, scoreTimer; // Add scoreTimer
@@ -23,18 +21,20 @@ public class BlueSideClose extends OpMode {
     private boolean scoringStarted = false;
     private static final double SCORE_DURATION = 1.2; // Scoring time constant
     double shootWaitTime = 1;
-    private final Pose startPose = new Pose(25, 117, Math.toRadians(144)); // Start Pose of robot
-    private final Pose goalPose = new Pose(12, 137, Math.toRadians(140)); // Pose of the goal
-    private final Pose scorePose = new Pose(60, 84, Math.toRadians(140)); // Scoring pose
-    private final Pose endPose = new Pose(20, 70, Math.toRadians(90)); // Ending pose
-    private final Pose turn = new Pose(58, 82, Math.toRadians(180)); //Turn from preload shoot to face balls for first intake
-    private final Pose intake1 = new Pose(32, 82, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
-    private final Pose intakeStart2 = new Pose(55, 61, Math.toRadians(180)); // Drive to second line
-    private final Pose intake2 = new Pose(27, 59, Math.toRadians(180)); // Intake along second line
+    private final Pose startPose = new Pose(21, 122, Math.toRadians(144)); // Start Pose of robot
+    private final Pose scorePose = new Pose(59.5, 84, Math.toRadians(220)); // Scoring pose
+    private final Pose spike1Intake = new Pose(16.5, 84, Math.toRadians(180)); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
+    private final Pose spike2Intake = new Pose(19, 60); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
+    private final Pose spike2ControlPoint = new Pose(49.3924914675768, 59.22184300341295);
+    private final Pose spike3Intake = new Pose(16, 35.5); // Drive to first and intake first line (in this case, start intake when pathing to this pose)
+    private final Pose spike3ControlPoint = new Pose(52.96261682242991, 35.644859813084125);
+    private final Pose gateControlPoint = new Pose(31.628504672897204, 58.224299065420574);
+    private final Pose gateOpen = new Pose(27, 59); // Intake along second line
+    private final Pose gateIntake = new Pose(9, 55.5, Math.toRadians(95)); // Intake along second line
     private final Pose intakeStart3 = new Pose(55, 39, Math.toRadians(180)); // Drive to third line
     private final Pose intake3 = new Pose(27, 39, Math.toRadians(180)); // Intake along third line
-
-    private PathChain scorePreload, driveToEnd, alignToIntake1, intakePath1, avoid, score1, drive2, intakePath2, score2, drive3, intakePath3, score3;
+    private final Pose endPose = new Pose(20, 70, Math.toRadians(90)); // Ending pose
+    private PathChain scorePreload, spike1IntakeAndScore, spike2IntakeAndScore, gateIntakeAndScore, spike3IntakeAndScore, driveToEnd;
 
     public void buildPaths() {
         scorePreload = follower.pathBuilder()
@@ -42,59 +42,35 @@ public class BlueSideClose extends OpMode {
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
                 .build();
 
-        alignToIntake1 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, turn))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), turn.getHeading())
+        spike2IntakeAndScore = follower.pathBuilder()
+                .addParametricCallback(0.0, ()->{mechanisms.setState(RoboStates.INTAKE);})
+                .addPath(new BezierCurve(scorePose, spike2ControlPoint, spike2Intake))
+                .setTangentHeadingInterpolation()
+                .addPath(new BezierLine(spike2Intake, scorePose))
+                .setLinearHeadingInterpolation(spike2Intake.getHeading(), scorePose.getHeading())
                 .build();
 
-        intakePath1 = follower.pathBuilder()
-                .addPath(new BezierLine(turn, intake1))
-                .setLinearHeadingInterpolation(turn.getHeading(), intake1.getHeading())
+        gateIntakeAndScore = follower.pathBuilder()//FIX THHIS
+                .addPath(new BezierCurve(scorePose, gateControlPoint, gateOpen))
+                .setTangentHeadingInterpolation()
+                .addPath(new BezierLine(gateOpen, gateIntake))
+                .setLinearHeadingInterpolation(gateOpen.getHeading(), gateIntake.getHeading())
+                .addPath(new BezierLine(gateIntake, scorePose))
+                .setLinearHeadingInterpolation(gateIntake.getHeading(), scorePose.getHeading())
                 .build();
 
-        score1 = follower.pathBuilder()
-                .addPath(new BezierLine(intake1, scorePose))
-                .setLinearHeadingInterpolation(intake1.getHeading(), scorePose.getHeading())
+        spike1IntakeAndScore = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, spike1Intake))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), spike1Intake.getHeading())
+                .addPath(new BezierLine(spike1Intake, scorePose))
+                .setLinearHeadingInterpolation(spike1Intake.getHeading(), scorePose.getHeading())
                 .build();
 
-        drive2 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, intakeStart2))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), intakeStart2.getHeading())
-                .build();
-
-        intakePath2 = follower.pathBuilder()
-                .addPath(new BezierLine(intakeStart2, intake2))
-                .setLinearHeadingInterpolation(intakeStart2.getHeading(), intake2.getHeading())
-                .build();
-
-        avoid = follower.pathBuilder()
-                .addPath(new BezierLine(intake2, intakeStart2))
-                .setLinearHeadingInterpolation(intake2.getHeading(), intakeStart2.getHeading())
-                .build();
-
-        score2 = follower.pathBuilder()
-                .addPath(new BezierLine(intakeStart2, scorePose))
-                .setLinearHeadingInterpolation(intakeStart2.getHeading(), scorePose.getHeading())
-                .build();
-
-        drive3 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, intakeStart3))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), intakeStart3.getHeading())
-                .build();
-
-        intakePath3 = follower.pathBuilder()
-                .addPath(new BezierLine(intakeStart3, intake3))
-                .setLinearHeadingInterpolation(intakeStart3.getHeading(), intake3.getHeading())
-                .build();
-
-        score3 = follower.pathBuilder()
-                .addPath(new BezierLine(intake3, scorePose))
-                .setLinearHeadingInterpolation(intake3.getHeading(), scorePose.getHeading())
-                .build();
-
-        driveToEnd = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, endPose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())
+        spike3IntakeAndScore = follower.pathBuilder()
+                .addPath(new BezierCurve(scorePose, spike3ControlPoint, spike3Intake))
+                .setTangentHeadingInterpolation()
+                .addPath(new BezierLine(spike3Intake, scorePose))
+                .setLinearHeadingInterpolation(spike3Intake.getHeading(), scorePose.getHeading())
                 .build();
     }
 
@@ -110,12 +86,12 @@ public class BlueSideClose extends OpMode {
                 if (!follower.isBusy()) {
                     if (!scoringStarted) {
                         mechanisms.setState(RoboStates.AUTO_SCORE);
-                        scoreTimer.resetTimer(); // Reset scoring timer when scoring starts
+                        scoreTimer.resetTimer();
                         scoringStarted = true;
                     }
                     if (scoreTimer.getElapsedTimeSeconds() > SCORE_DURATION) {
                         mechanisms.setState(RoboStates.IDLE);
-                        follower.followPath(alignToIntake1);
+                        //follower.followPath(alignToIntake1);
                         setPathState(2);
                     }
                 }
@@ -124,7 +100,7 @@ public class BlueSideClose extends OpMode {
             case 2:
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.INTAKE);
-                    follower.followPath(intakePath1, 0.5, false);
+                    //follower.followPath(gateIntakePathchain, 0.5, false);
                     setPathState(3);
                 }
                 break;
@@ -132,7 +108,7 @@ public class BlueSideClose extends OpMode {
             case 3:
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.IDLE);
-                    follower.followPath(score1, true); // holdEnd = true
+                    //follower.followPath(score1, true); // holdEnd = true
                     setPathState(4);
                 }
                 break;
@@ -146,7 +122,7 @@ public class BlueSideClose extends OpMode {
                     }
                     if (scoreTimer.getElapsedTimeSeconds() > SCORE_DURATION) {
                         mechanisms.setState(RoboStates.IDLE);
-                        follower.followPath(drive2);
+                        //follower.followPath(drive2);
                         setPathState(5);
                     }
                 }
@@ -155,7 +131,7 @@ public class BlueSideClose extends OpMode {
             case 5:
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.INTAKE);
-                    follower.followPath(intakePath2, 0.5, false);
+                    //follower.followPath(intakePath2, 0.5, false);
                     setPathState(6);
                 }
                 break;
@@ -163,7 +139,7 @@ public class BlueSideClose extends OpMode {
             case 6:
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.IDLE);
-                    follower.followPath(avoid);
+                    //follower.followPath(avoid);
                     setPathState(7);
                 }
                 break;
@@ -171,7 +147,7 @@ public class BlueSideClose extends OpMode {
             case 7:
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.IDLE);
-                    follower.followPath(score2, true); // holdEnd = true
+                    //follower.followPath(score2, true); // holdEnd = true
                     setPathState(8);
                 }
                 break;
@@ -185,7 +161,7 @@ public class BlueSideClose extends OpMode {
                     }
                     if (scoreTimer.getElapsedTimeSeconds() > SCORE_DURATION) {
                         mechanisms.setState(RoboStates.IDLE);
-                        follower.followPath(drive3);
+                        //follower.followPath(drive3);
                         setPathState(9);
                     }
                 }
@@ -194,7 +170,7 @@ public class BlueSideClose extends OpMode {
             case 9:
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.INTAKE);
-                    follower.followPath(intakePath3, 0.5, false);
+                    //follower.followPath(intakePath3, 0.5, false);
                     setPathState(10);
                 }
                 break;
@@ -202,7 +178,7 @@ public class BlueSideClose extends OpMode {
             case 10:
                 if (!follower.isBusy()) {
                     mechanisms.setState(RoboStates.IDLE);
-                    follower.followPath(score3, true); // holdEnd = true
+                    //follower.followPath(score3, true); // holdEnd = true
                     setPathState(11);
                 }
                 break;
@@ -227,25 +203,17 @@ public class BlueSideClose extends OpMode {
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
-        scoringStarted = false; // Reset the flag when changing states
+        scoringStarted = false;
     }
 
     @Override
     public void loop() {
         follower.update();
-
-        // Update robot state with current pose for distance calculations
-        RobotState.getInstance().setPose(follower.getPose());
-
         autonomousPathUpdate();
         mechanisms.update();
-        mechanisms.updateGoalDistance();
+
         telemetry.addData("path state", pathState);
         telemetry.addData("scoringStarted", scoringStarted);
-        telemetry.addData("flywheel velocity", mechanisms.getVelocity());
-        telemetry.addData("goal distance", mechanisms.getGoalDist());
-        telemetry.addData("calculated flywheel vel", mechanisms.getCalculatedFlywheelVelocity());
-        telemetry.addData("calculated hood angle", mechanisms.getCalculatedHoodAngle());
         telemetry.addData("gateTimer", mechanisms.gateTimer.seconds());
         telemetry.addData("scoreTimer", scoreTimer.getElapsedTimeSeconds());
         telemetry.addData("x", follower.getPose().getX());
@@ -266,14 +234,8 @@ public class BlueSideClose extends OpMode {
         opmodeTimer.resetTimer();
         follower = Constants.createFollower(hardwareMap);
 
-        // Set alliance color for goal distance calculations
-        RobotState.getInstance().setAlliance(true); // Blue alliance
-
         buildPaths();
         follower.setStartingPose(startPose);
-
-        // Initialize robot state with starting pose
-        RobotState.getInstance().setPose(startPose);
     }
 
     /**
@@ -293,4 +255,3 @@ public class BlueSideClose extends OpMode {
         setPathState(0);
     }
 }
-
