@@ -16,7 +16,7 @@ public class LimeLightConstants {
     public static double TURRET_GEAR_RATIO = 1.111;
     public static double TURRET_MAX_ANGLE = 160.0;   // Max degrees right
     public static double TURRET_MIN_ANGLE = -160.0;  // Max degrees left
-    public static double TURRET_DEADBAND = 0.2;      // Degrees - ignore small offsets
+    public static double TURRET_DEADBAND = 0.2;
     public static double ENCODER_VOLTAGE_MAX = 3.3;
     public static double ENCODER_DEGREES_PER_VOLT = 360.0 / ENCODER_VOLTAGE_MAX;
     public static int DEFAULT_PIPELINE = 0;

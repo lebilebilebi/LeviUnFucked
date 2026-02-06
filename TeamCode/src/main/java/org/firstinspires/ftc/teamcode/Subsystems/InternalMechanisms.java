@@ -66,7 +66,7 @@ public class InternalMechanisms {
     private double GATE_CLOSED = 0.2;
     private double GATE_OPEN_TIME = 0.18;
     private double GATE_CLOSE_TIME = 0.18;
-
+    LLSub llSub;
 
     public InternalMechanisms(HardwareMap hardwareMap) {
 
@@ -137,10 +137,6 @@ public class InternalMechanisms {
         flywheelVelocity = Math.max(flywheelVelocity - decrement, MIN_FLYWHEEL_VELOCITY);
     }
 
-    public void setFlywheelVelocity(double velocity) {
-        flywheelVelocity = MathFunctions.clamp(velocity, MIN_FLYWHEEL_VELOCITY, MAX_FLYWHEEL_VELOCITY);
-    }
-
     public double getHoodPosition() {
         return hoodPosition;
     }
@@ -154,7 +150,13 @@ public class InternalMechanisms {
     }
 
     public void setHoodPosition(double position) {
-        hoodPosition = MathFunctions.clamp(position, MIN_HOOD_POSITION, MAX_HOOD_POSITION);
+        hoodR.setPosition(position);
+        hoodL.setPosition(position);
+    }
+
+    public void setFlywheelVelocity(double velocity) {
+        shootR.setVelocity(velocity);
+        shootL.setVelocity(velocity);
     }
 
     public double getGoalDist() {
@@ -251,16 +253,11 @@ public class InternalMechanisms {
                 break;
 
             case AUTO_SCORE:
-                //double calculatedVelocity = getCalculatedFlywheelVelocity();
-                //double calculatedHoodAngle = getCalculatedHoodAngle();
+                shootR.setVelocity(llSub.getFinalFlywheelVel());
+                shootL.setVelocity(llSub.getFinalFlywheelVel());
 
-                //shootR.setVelocity(calculatedVelocity);
-                //shootL.setVelocity(calculatedVelocity);
-
-                //hoodR.setPosition(calculatedHoodAngle);
-                //hoodL.setPosition(calculatedHoodAngle);
-
-                //double velocityThreshold = calculatedVelocity * 0.95;
+                hoodR.setPosition(llSub.getFinalHoodAngle());
+                hoodL.setPosition(llSub.getFinalHoodAngle());
 
                 /*if (currentVelocity >= velocityThreshold || gateTimer.seconds() > 0.3) {
                     rgbLight.setPosition(0.5);

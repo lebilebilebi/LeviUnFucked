@@ -80,7 +80,6 @@ public class NewBlueSideClose extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                mechanisms.setState(RoboStates.IDLE);
                 follower.followPath(scorePreload, true); // holdEnd = true
                 setPathState(1);
                 break;
