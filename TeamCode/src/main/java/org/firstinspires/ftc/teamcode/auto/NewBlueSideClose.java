@@ -31,8 +31,6 @@ public class NewBlueSideClose extends OpMode {
     private final Pose gateControlPoint = new Pose(31.628504672897204, 58.224299065420574);
     private final Pose gateOpen = new Pose(27, 59); // Intake along second line
     private final Pose gateIntake = new Pose(9, 55.5, Math.toRadians(95)); // Intake along second line
-    private final Pose intakeStart3 = new Pose(55, 39, Math.toRadians(180)); // Drive to third line
-    private final Pose intake3 = new Pose(27, 39, Math.toRadians(180)); // Intake along third line
     private final Pose endPose = new Pose(20, 70, Math.toRadians(90)); // Ending pose
     private PathChain scorePreload, spike1IntakeAndScore, spike2IntakeAndScore, gateIntakeAndScore, spike3IntakeAndScore, driveToEnd;
 
@@ -43,14 +41,14 @@ public class NewBlueSideClose extends OpMode {
                 .build();
 
         spike2IntakeAndScore = follower.pathBuilder()
-                .addParametricCallback(0.0, ()->{mechanisms.setState(RoboStates.INTAKE);})
+                //.addParametricCallback(0.0, ()->{mechanisms.setState(RoboStates.INTAKE);})
                 .addPath(new BezierCurve(scorePose, spike2ControlPoint, spike2Intake))
                 .setTangentHeadingInterpolation()
                 .addPath(new BezierLine(spike2Intake, scorePose))
                 .setLinearHeadingInterpolation(spike2Intake.getHeading(), scorePose.getHeading())
                 .build();
 
-        gateIntakeAndScore = follower.pathBuilder()//FIX THHIS
+        gateIntakeAndScore = follower.pathBuilder()
                 .addPath(new BezierCurve(scorePose, gateControlPoint, gateOpen))
                 .setTangentHeadingInterpolation()
                 .addPath(new BezierLine(gateOpen, gateIntake))
@@ -72,6 +70,11 @@ public class NewBlueSideClose extends OpMode {
                 .addPath(new BezierLine(spike3Intake, scorePose))
                 .setLinearHeadingInterpolation(spike3Intake.getHeading(), scorePose.getHeading())
                 .build();
+
+        driveToEnd = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, endPose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), endPose.getHeading())
+                .build();
     }
 
     public void autonomousPathUpdate() {
@@ -84,117 +87,42 @@ public class NewBlueSideClose extends OpMode {
 
             case 1:
                 if (!follower.isBusy()) {
-                    if (!scoringStarted) {
-                        mechanisms.setState(RoboStates.AUTO_SCORE);
-                        scoreTimer.resetTimer();
-                        scoringStarted = true;
-                    }
-                    if (scoreTimer.getElapsedTimeSeconds() > SCORE_DURATION) {
-                        mechanisms.setState(RoboStates.IDLE);
-                        //follower.followPath(alignToIntake1);
-                        setPathState(2);
-                    }
+                    follower.followPath(spike2IntakeAndScore, true);
+                    setPathState(2);
                 }
                 break;
 
             case 2:
                 if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.INTAKE);
-                    //follower.followPath(gateIntakePathchain, 0.5, false);
+                    follower.followPath(gateIntakeAndScore, true);
                     setPathState(3);
                 }
                 break;
-
             case 3:
                 if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.IDLE);
-                    //follower.followPath(score1, true); // holdEnd = true
+                    follower.followPath(gateIntakeAndScore, true);
                     setPathState(4);
                 }
                 break;
 
             case 4:
                 if (!follower.isBusy()) {
-                    if (!scoringStarted) {
-                        mechanisms.setState(RoboStates.AUTO_SCORE);
-                        scoreTimer.resetTimer();
-                        scoringStarted = true;
-                    }
-                    if (scoreTimer.getElapsedTimeSeconds() > SCORE_DURATION) {
-                        mechanisms.setState(RoboStates.IDLE);
-                        //follower.followPath(drive2);
-                        setPathState(5);
-                    }
+                    follower.followPath(spike1IntakeAndScore, true);
+                    setPathState(5);
                 }
                 break;
 
             case 5:
                 if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.INTAKE);
-                    //follower.followPath(intakePath2, 0.5, false);
+                    follower.followPath(spike3IntakeAndScore, true);
                     setPathState(6);
                 }
                 break;
 
             case 6:
                 if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.IDLE);
-                    //follower.followPath(avoid);
-                    setPathState(7);
-                }
-                break;
-
-            case 7:
-                if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.IDLE);
-                    //follower.followPath(score2, true); // holdEnd = true
-                    setPathState(8);
-                }
-                break;
-
-            case 8:
-                if (!follower.isBusy()) {
-                    if (!scoringStarted) {
-                        mechanisms.setState(RoboStates.AUTO_SCORE);
-                        scoreTimer.resetTimer();
-                        scoringStarted = true;
-                    }
-                    if (scoreTimer.getElapsedTimeSeconds() > SCORE_DURATION) {
-                        mechanisms.setState(RoboStates.IDLE);
-                        //follower.followPath(drive3);
-                        setPathState(9);
-                    }
-                }
-                break;
-
-            case 9:
-                if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.INTAKE);
-                    //follower.followPath(intakePath3, 0.5, false);
-                    setPathState(10);
-                }
-                break;
-
-            case 10:
-                if (!follower.isBusy()) {
-                    mechanisms.setState(RoboStates.IDLE);
-                    //follower.followPath(score3, true); // holdEnd = true
-                    setPathState(11);
-                }
-                break;
-
-            case 11:
-                if (!follower.isBusy()) {
-                    if (!scoringStarted) {
-                        mechanisms.setState(RoboStates.AUTO_SCORE);
-                        scoreTimer.resetTimer();
-                        scoringStarted = true;
-                    }
-                    if (scoreTimer.getElapsedTimeSeconds() > SCORE_DURATION) {
-                        mechanisms.setState(RoboStates.FULL_IDLE);
-                        follower.followPath(driveToEnd);
-                        setPathState(-1);
-                    }
+                    follower.followPath(driveToEnd, true);
+                    setPathState(-1);
                 }
                 break;
         }
