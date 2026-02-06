@@ -13,16 +13,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms;
 import org.firstinspires.ftc.teamcode.Subsystems.LimeLightConstants;
 
-@Configurable
 @TeleOp(name = "Limelight3A_PD_Tracking_Fixed")
 public class LLTEST extends LinearOpMode {
     InternalMechanisms mechanisms;
-
-    LimeLightConstants limeLightConstants;
-
     private Limelight3A limelight;
-    private Servo rgbLight;
-    private Servo gate;
     private CRServo turretR;
     private CRServo turretL;
 
@@ -39,8 +33,6 @@ public class LLTEST extends LinearOpMode {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         turretR = hardwareMap.get(CRServo.class, "turretR");
         turretL = hardwareMap.get(CRServo.class, "turretL");
-        rgbLight = hardwareMap.get(Servo.class, "rgbLight");
-        gate = hardwareMap.get(Servo.class, "gate");
 
         telemetry.setMsTransmissionInterval(11);
         limelight.pipelineSwitch(0);
