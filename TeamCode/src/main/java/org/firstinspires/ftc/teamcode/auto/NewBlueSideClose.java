@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms;
+import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms.RoboStates;
 
 
@@ -32,7 +33,7 @@ public class NewBlueSideClose extends OpMode {
     private final Pose gateOpen = new Pose(27, 59); // Intake along second line
     private final Pose gateIntake = new Pose(9, 55.5, Math.toRadians(95)); // Intake along second line
     private final Pose endPose = new Pose(20, 70, Math.toRadians(90)); // Ending pose
-    private PathChain scorePreload, spike1IntakeAndScore, spike2IntakeAndScore, gateIntakeAndScore, spike3IntakeAndScore, driveToEnd;
+    private PathChain scorePreload, spike1IntakePath, spike1ScorePath, spike2IntakePath, spike2ScorePath, gateIntakePath, gateScorePath, spike3IntakePath, spike3ScorePath, driveToEnd;
 
     public void buildPaths() {
         scorePreload = follower.pathBuilder()
@@ -40,38 +41,62 @@ public class NewBlueSideClose extends OpMode {
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
                 .build();
 
-        spike2IntakeAndScore = follower.pathBuilder()
-                //.addParametricCallback(0.0, ()->{mechanisms.setState(RoboStates.INTAKE);})
+        spike2IntakePath = follower.pathBuilder()
+                .addParametricCallback(0.4, ()->{mechanisms.setState(RoboStates.INTAKE);})
                 .addPath(new BezierCurve(scorePose, spike2ControlPoint, spike2Intake))
                 .setTangentHeadingInterpolation()
+                .build();
+
+        spike2ScorePath = follower.pathBuilder()
+                .addParametricCallback(0.0, ()->{mechanisms.setState(RoboStates.IDLE);})
+                .addParametricCallback(1.0, ()->{mechanisms.setState(RoboStates.AUTO_SCORE);})
                 .addPath(new BezierLine(spike2Intake, scorePose))
                 .setLinearHeadingInterpolation(spike2Intake.getHeading(), scorePose.getHeading())
                 .build();
 
-        gateIntakeAndScore = follower.pathBuilder()
+        gateIntakePath = follower.pathBuilder()
+                .addParametricCallback(0.9, ()->{mechanisms.setState(RoboStates.INTAKE);})
                 .addPath(new BezierCurve(scorePose, gateControlPoint, gateOpen))
                 .setTangentHeadingInterpolation()
                 .addPath(new BezierLine(gateOpen, gateIntake))
                 .setLinearHeadingInterpolation(gateOpen.getHeading(), gateIntake.getHeading())
+                .build();
+
+        gateScorePath = follower.pathBuilder()
+                .addParametricCallback(0.0, ()->{mechanisms.setState(RoboStates.IDLE);})
+                .addParametricCallback(1.0, ()->{mechanisms.setState(RoboStates.AUTO_SCORE);})
                 .addPath(new BezierLine(gateIntake, scorePose))
                 .setLinearHeadingInterpolation(gateIntake.getHeading(), scorePose.getHeading())
                 .build();
 
-        spike1IntakeAndScore = follower.pathBuilder()
+        spike1IntakePath = follower.pathBuilder()
+                .addParametricCallback(0.2, ()->{mechanisms.setState(RoboStates.INTAKE);})
                 .addPath(new BezierLine(scorePose, spike1Intake))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), spike1Intake.getHeading())
+                .build();
+
+        spike1ScorePath = follower.pathBuilder()
+                .addParametricCallback(0.0, ()->{mechanisms.setState(RoboStates.IDLE);})
+                .addParametricCallback(1.0, ()->{mechanisms.setState(RoboStates.AUTO_SCORE);})
                 .addPath(new BezierLine(spike1Intake, scorePose))
                 .setLinearHeadingInterpolation(spike1Intake.getHeading(), scorePose.getHeading())
                 .build();
 
-        spike3IntakeAndScore = follower.pathBuilder()
+        spike3IntakePath = follower.pathBuilder()
+                .addParametricCallback(0.5, ()->{mechanisms.setState(RoboStates.INTAKE);})
                 .addPath(new BezierCurve(scorePose, spike3ControlPoint, spike3Intake))
                 .setTangentHeadingInterpolation()
+                .build();
+
+        spike3ScorePath = follower.pathBuilder()
+                .addParametricCallback(0.0, ()->{mechanisms.setState(RoboStates.IDLE);})
+                .addParametricCallback(1.0, ()->{mechanisms.setState(RoboStates.AUTO_SCORE);})
                 .addPath(new BezierLine(spike3Intake, scorePose))
                 .setLinearHeadingInterpolation(spike3Intake.getHeading(), scorePose.getHeading())
                 .build();
 
         driveToEnd = follower.pathBuilder()
+                .addParametricCallback(0.0, ()->{mechanisms.setState(RoboStates.FULL_IDLE);})
                 .addPath(new BezierLine(scorePose, endPose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), endPose.getHeading())
                 .build();
@@ -86,39 +111,75 @@ public class NewBlueSideClose extends OpMode {
 
             case 1:
                 if (!follower.isBusy()) {
-                    follower.followPath(spike2IntakeAndScore, true);
+                    follower.followPath(spike2IntakePath, true);
                     setPathState(2);
                 }
                 break;
 
             case 2:
                 if (!follower.isBusy()) {
-                    follower.followPath(gateIntakeAndScore, true);
+                    follower.followPath(spike2ScorePath, true);
                     setPathState(3);
                 }
                 break;
+
             case 3:
                 if (!follower.isBusy()) {
-                    follower.followPath(gateIntakeAndScore, true);
+                    follower.followPath(gateIntakePath, true);
                     setPathState(4);
                 }
                 break;
 
             case 4:
                 if (!follower.isBusy()) {
-                    follower.followPath(spike1IntakeAndScore, true);
+                    follower.followPath(gateScorePath, true);
                     setPathState(5);
                 }
                 break;
 
             case 5:
                 if (!follower.isBusy()) {
-                    follower.followPath(spike3IntakeAndScore, true);
+                    follower.followPath(gateIntakePath, true);
                     setPathState(6);
                 }
                 break;
 
             case 6:
+                if (!follower.isBusy()) {
+                    follower.followPath(gateScorePath, true);
+                    setPathState(7);
+                }
+                break;
+
+            case 7:
+                if (!follower.isBusy()) {
+                    follower.followPath(spike1IntakePath, true);
+                    setPathState(8);
+                }
+                break;
+
+            case 8:
+                if (!follower.isBusy()) {
+                    follower.followPath(spike1ScorePath, true);
+                    setPathState(9);
+                }
+                break;
+
+            case 9:
+                if (!follower.isBusy()) {
+                    follower.followPath(spike3IntakePath, true);
+                    setPathState(10);
+                }
+                break;
+
+            case 10:
+                if (!follower.isBusy()) {
+                    follower.followPath(spike3ScorePath, true);
+                    setPathState(11);
+                }
+                break;
+
+            case 11:
                 if (!follower.isBusy()) {
                     follower.followPath(driveToEnd, true);
                     setPathState(-1);
