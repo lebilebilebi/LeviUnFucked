@@ -2,141 +2,140 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLStatus;
-import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.math.MathFunctions;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.teamcode.Subsystems.InternalMechanisms;
-import org.firstinspires.ftc.teamcode.Subsystems.LimeLightConstants;
 
 public class LLSub {
-    InternalMechanisms mechanisms;
     private Limelight3A limelight;
     private CRServo turretR;
     private CRServo turretL;
 
-    public static double kP = LimeLightConstants.TURRET_KP;
-    public static double kD = LimeLightConstants.TURRET_KD;
-    public static double kF = LimeLightConstants.TURRET_KSTATIC;
+    public static double kP = 0;
+    public static double kD = 0;
+    public static double kF = 0;
     public static double deadband = LimeLightConstants.TURRET_DEADBAND;
-    public static double maxPower = LimeLightConstants.TURRET_MAX_POWER;
+
     private double lastError = 0;
     private double calculatedHoodAngle = 0;
     private double calculatedFlywheelVel = 0;
+    private double goalDist = 0;
+    private double currentTx = 0;
+    private double currentTy = 0;
+    private boolean hasValidTarget = false;
+
     private final ElapsedTime timer = new ElapsedTime();
-    
     private LinearOpMode opMode;
     
-    public LLSub(LinearOpMode opMode){
+    public LLSub(LinearOpMode opMode) {
         this.opMode = opMode;
         limelight = opMode.hardwareMap.get(Limelight3A.class, "limelight");
         turretR = opMode.hardwareMap.get(CRServo.class, "turretR");
         turretL = opMode.hardwareMap.get(CRServo.class, "turretL");
+
+        turretR.setDirection(CRServo.Direction.REVERSE);
+        turretL.setDirection(CRServo.Direction.REVERSE);
 
         opMode.telemetry.setMsTransmissionInterval(11);
         limelight.pipelineSwitch(0);
         limelight.start();
     }
 
-    public void update(){
+    public void update() {
         LLStatus status = limelight.getStatus();
-        opMode.telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
-                status.getTemp(), status.getCpu(), (int) status.getFps());
-        opMode.telemetry.addData("Pipeline", "Index: %d, Type: %s",
-                status.getPipelineIndex(), status.getPipelineType());
-
         LLResult result = limelight.getLatestResult();
 
         if (result != null && result.isValid()) {
-            double tx = result.getTx();
-            double ty = result.getTy();
-            double currentError = -tx;
+            hasValidTarget = true;
+            currentTx = result.getTx();
+            currentTy = result.getTy();
+            double error = currentTx;
 
-            if (Math.abs(currentError) < deadband) currentError = 0;
-            double pTerm = currentError * kP;
-            double derivative = (currentError - lastError);
-            double dTerm = derivative * kD;
-            double fTerm = Math.signum(currentError) * kF;
+            // Turret tracking
+            double pOut = error * kP;
+            double dOut = (error - lastError) * kD;
+            double fOut = 0;
+            if (Math.abs(error) > 0.5) {
+                fOut = Math.signum(error) * kF;
+            }
 
-            double drive = pTerm + dTerm + fTerm;
+            double power = pOut + dOut + fOut;
+            turretR.setPower(power);
+            turretL.setPower(power);
+            lastError = error;
 
-            drive = Math.max(-maxPower, Math.min(maxPower, drive));
-
-            turretR.setPower(drive);
-            turretL.setPower(drive);
-
-            // Save state
-            lastError = currentError;
+            // Distance calculation
             double limelightMountAngleDegrees = LimeLightConstants.MOUNT_ANGLE_DEGREES;
-
             double limelightLensHeightInches = LimeLightConstants.LENS_HEIGHT_INCHES;
-
             double goalHeightInches = LimeLightConstants.GOAL_HEIGHT_INCHES;
 
-            double angleToGoalDegrees = limelightMountAngleDegrees + ty;
-
+            double angleToGoalDegrees = limelightMountAngleDegrees + currentTy;
             double angleToGoalRadians = Math.toRadians(angleToGoalDegrees);
 
-            double distanceFromLimelightToGoalInches = (goalHeightInches - limelightLensHeightInches) / Math.tan(angleToGoalRadians);
+            goalDist = (goalHeightInches - limelightLensHeightInches) / Math.tan(angleToGoalRadians);
 
-            calculatedHoodAngle = getHoodAngle(distanceFromLimelightToGoalInches);
-
-            calculatedFlywheelVel = getFlywheelVelocity(distanceFromLimelightToGoalInches);
-
-            mechanisms.setFlywheelVelocity(calculatedFlywheelVel);
-            mechanisms.setHoodPosition(calculatedHoodAngle);
-
-            opMode.telemetry.addData("TAG STATUS: NONZERO, ID:", result.getFiducialResults().get(0).getFiducialId());
-            opMode.telemetry.addData("tx", tx);
-            opMode.telemetry.addData("ty", ty);
-            opMode.telemetry.addData("Servo Power", drive);
-            opMode.telemetry.addData("Hood Angle", calculatedHoodAngle);
-            opMode.telemetry.addData("Flywheel", calculatedFlywheelVel);
-            opMode.telemetry.addData("Distance to goal", distanceFromLimelightToGoalInches);
+            // Calculate flywheel and hood values
+            calculatedFlywheelVel = getFlywheelVelocity(goalDist);
+            calculatedHoodAngle = getHoodAngle(goalDist);
 
         } else {
+            hasValidTarget = false;
+            lastError = 0;
             turretR.setPower(0);
             turretL.setPower(0);
-            opMode.telemetry.addData("TAG STATUS", "VOID");
-            lastError = 0;
-            kD = 0;
-            kP =0;
         }
-        opMode.telemetry.update();
     }
 
-    public void stop(){
+    public void stop() {
         limelight.stop();
+        turretR.setPower(0);
+        turretL.setPower(0);
     }
 
-    public void reset(){
+    public void reset() {
         timer.reset();
         lastError = 0;
+        hasValidTarget = false;
     }
+
     public static double getHoodAngle(double goalDist) {
-        double rawAngle = (0.00000120563 * Math.pow(goalDist, 3))
-                - (0.000235615 * Math.pow(goalDist, 2))
-                + (0.00615079 * goalDist)
-                + 0.57;
+        double rawAngle = (-1.74147E-7 * Math.pow(goalDist, 3))
+                + (0.0000321043 * Math.pow(goalDist, 2))
+                - (0.0034149 * goalDist)
+                + 0.466667;
         return MathFunctions.clamp(rawAngle, 0.0, 0.9);
     }
+
     public static double getFlywheelVelocity(double goalDist) {
-        double rawVelocity = (0.000331549 * Math.pow(goalDist, 3))
-                - (0.0542535 * Math.pow(goalDist, 2))
-                + (8.92361 * goalDist)
-                + 1212.0;
+        double rawVelocity = (0.0145089 * Math.pow(goalDist, 2))
+                + (0.533929 * goalDist)
+                + 510.4;
         return MathFunctions.clamp(rawVelocity, 0.0, 2200.0);
     }
+
     public double getFinalFlywheelVel() {
         return calculatedFlywheelVel;
     }
+
     public double getFinalHoodAngle() {
         return calculatedHoodAngle;
+    }
+
+    public double getDistanceToGoal() {
+        return goalDist;
+    }
+
+    public boolean hasValidTarget() {
+        return hasValidTarget;
+    }
+
+    public double getTx() {
+        return currentTx;
+    }
+
+    public double getTy() {
+        return currentTy;
     }
 }
