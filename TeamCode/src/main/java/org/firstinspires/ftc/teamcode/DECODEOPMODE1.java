@@ -36,6 +36,7 @@ public class DECODEOPMODE1 extends LinearOpMode {
         // Initialize subsystems
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
+        shooter.setIntake(intake);
         drive = new DriveMechanisms(hardwareMap);
         llSub = new LLSub(this);
         shooter.setLLSub(llSub);

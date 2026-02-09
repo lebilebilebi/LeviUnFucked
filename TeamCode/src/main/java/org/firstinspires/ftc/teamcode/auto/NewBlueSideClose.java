@@ -17,7 +17,6 @@ public class NewBlueSideClose extends OpMode {
     // Subsystems
     private Shooter shooter;
     private Intake intake;
-
     private Follower follower;
     private Timer pathTimer, opmodeTimer, scoreTimer;
     private int pathState;

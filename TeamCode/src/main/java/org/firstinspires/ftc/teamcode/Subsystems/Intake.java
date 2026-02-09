@@ -10,7 +10,8 @@ public class Intake {
         IDLE,
         INTAKE,
         OUTTAKE,
-        FEED_SHOOTER  // New state for feeding balls to shooter
+        FEED_SHOOTER,
+        AUTO_INTAKE
     }
 
     private DcMotorEx intakeStage1 = null;
@@ -43,6 +44,10 @@ public class Intake {
         stage1Stopped = false;
         stage2Stopped = false;
         intakeGraceTimer.reset();
+    }
+
+    public void requestAutoIntake() {
+        setState(IntakeStates.AUTO_INTAKE);
     }
 
     public IntakeStates getState() {
@@ -80,25 +85,17 @@ public class Intake {
                 break;
 
             case INTAKE:
+            case AUTO_INTAKE:
                 if (intakeGraceTimer.seconds() > INTAKE_GRACE_PERIOD) {
-                    if (stage1Current >= STAGE_ONE_CURRENT_LIMIT) {
-                        stage1Stopped = true;
-                    }
-                    if (stage2Current >= STAGE_TWO_CURRENT_LIMIT) {
-                        stage2Stopped = true;
-                    }
+                    if (stage1Current >= STAGE_ONE_CURRENT_LIMIT) stage1Stopped = true;
+                    if (stage2Current >= STAGE_TWO_CURRENT_LIMIT) stage2Stopped = true;
                 }
 
-                if (stage1Stopped) {
-                    intakeStage1.setPower(0);
-                } else {
-                    intakeStage1.setPower(1);
-                }
+                intakeStage1.setPower(stage1Stopped ? 0 : 1);
+                intakeStage2.setPower(stage2Stopped ? 0 : 1);
 
-                if (stage2Stopped) {
-                    intakeStage2.setPower(0);
-                } else {
-                    intakeStage2.setPower(1);
+                if (state == IntakeStates.AUTO_INTAKE && stage1Stopped && stage2Stopped) {
+                    setState(IntakeStates.IDLE);
                 }
                 break;
 

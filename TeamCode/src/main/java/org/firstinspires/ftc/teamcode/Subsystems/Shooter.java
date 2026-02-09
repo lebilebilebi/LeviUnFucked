@@ -45,9 +45,15 @@ public class Shooter {
     private static final double DEFAULT_TARGET_VELOCITY = 1500.0;
     private static final double DEFAULT_HOOD_POSITION = 0.45;
     private static final double GATE_OPEN_TIME = 0.3;
+    private static final double FEED_TIME = 1.5;
 
     // Reference to LLSub for auto-targeting
     private LLSub llSub;
+    private Intake intake; // optional link for auto-feed
+
+    private enum FireSequenceStage { NONE, SPINNING_UP, GATE_OPENING, FEEDING }
+    private FireSequenceStage fireStage = FireSequenceStage.NONE;
+    private final ElapsedTime fireTimer = new ElapsedTime();
 
     public Shooter(HardwareMap hardwareMap) {
         shootR = hardwareMap.get(DcMotorEx.class, "shootR");
@@ -71,6 +77,10 @@ public class Shooter {
 
     public void setLLSub(LLSub llSub) {
         this.llSub = llSub;
+    }
+
+    public void setIntake(Intake intake) {
+        this.intake = intake;
     }
 
     public void setState(ShooterStates newState) {
@@ -158,6 +168,12 @@ public class Shooter {
         return gateTimer.seconds() >= GATE_OPEN_TIME;
     }
 
+    public void requestFireSequence() {
+        fireStage = FireSequenceStage.SPINNING_UP;
+        fireTimer.reset();
+        setState(ShooterStates.SPIN_UP);
+    }
+
     public void update() {
         currentVelocity = shootR.getVelocity();
 
@@ -210,6 +226,40 @@ public class Shooter {
                 setHoodPosition(targetHoodPosition);
                 rgbLight.setPosition(0.5);
                 // gate opened on entry; keep spinning/aiming
+                break;
+        }
+
+        updateFireSequence();
+    }
+
+    private void updateFireSequence() {
+        if (fireStage == FireSequenceStage.NONE || intake == null) return;
+
+        switch (fireStage) {
+            case SPINNING_UP:
+                if (targetVelocity > 0 && currentVelocity >= targetVelocity * VELOCITY_THRESHOLD) {
+                    openGate();
+                    setState(ShooterStates.FIRING);
+                    fireStage = FireSequenceStage.GATE_OPENING;
+                    fireTimer.reset();
+                }
+                break;
+
+            case GATE_OPENING:
+                if (isGateOpen()) {
+                    intake.setState(Intake.IntakeStates.FEED_SHOOTER);
+                    fireStage = FireSequenceStage.FEEDING;
+                    fireTimer.reset();
+                }
+                break;
+
+            case FEEDING:
+                if (fireTimer.seconds() >= FEED_TIME) {
+                    intake.setState(Intake.IntakeStates.IDLE);
+                    closeGate();
+                    setState(ShooterStates.IDLE);
+                    fireStage = FireSequenceStage.NONE;
+                }
                 break;
         }
     }
