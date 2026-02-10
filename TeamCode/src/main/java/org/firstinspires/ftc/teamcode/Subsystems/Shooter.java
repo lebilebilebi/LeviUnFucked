@@ -175,6 +175,7 @@ public class Shooter {
     }
 
     public void update() {
+        // With bulk caching enabled in OpMode, this call is now instantaneous
         currentVelocity = shootR.getVelocity();
 
         switch (state) {

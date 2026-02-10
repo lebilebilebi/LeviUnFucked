@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class FlyWheelPIDFTune extends OpMode{
     private DcMotorEx shootR = null;
     private DcMotorEx shootL = null;
-    public double  ShootSpeed = 2200;
-    public double idle = 900;
+    public double  ShootSpeed = 1500;
+    public double idle = 550;
     double currentTargVel = ShootSpeed;
     double F = 0;
     double P = 0;
@@ -22,13 +22,12 @@ public class FlyWheelPIDFTune extends OpMode{
         shootR = hardwareMap.get(DcMotorEx.class, "shootR");
         shootL = hardwareMap.get(DcMotorEx.class, "shootL");
         shootR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shootL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shootL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shootR.setDirection(DcMotorSimple.Direction.REVERSE);
         shootL.setDirection(DcMotorSimple.Direction.FORWARD);
 
         PIDFCoefficients pidfCoefficients= new PIDFCoefficients(P, 0, 0, F);
         shootR.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
-        shootL.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         telemetry.addLine("Init done");
     }
 
@@ -48,20 +47,18 @@ public class FlyWheelPIDFTune extends OpMode{
         if (gamepad1.dpadRightWasPressed()){
             F += stepSizes[stepIndex];
         }
-        if (gamepad1.dpadDownWasPressed()) {
+        if (gamepad1.dpadUpWasPressed()) {
             P += stepSizes[stepIndex];
         }
-        if (gamepad1.dpadRightWasPressed()){
+        if (gamepad1.dpadDownWasPressed()){
             P -= stepSizes[stepIndex];
         }
         //set new pidf
         PIDFCoefficients pidfCoefficients= new PIDFCoefficients(P, 0, 0, F);
         shootR.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
-        shootL.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
-
 
         shootR.setVelocity(currentTargVel);
-        shootL.setVelocity(currentTargVel);
+        shootL.setPower(shootR.getPower());
 
         double currentVelocity = shootR.getVelocity();
         double error = currentTargVel - currentVelocity;

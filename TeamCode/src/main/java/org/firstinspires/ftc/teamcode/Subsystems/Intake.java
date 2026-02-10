@@ -49,6 +49,10 @@ public class Intake {
     public void requestAutoIntake() {
         setState(IntakeStates.AUTO_INTAKE);
     }
+    public void requestIntakeIdl() {
+        setState(IntakeStates.IDLE);
+    }
+
 
     public IntakeStates getState() {
         return state;

@@ -9,11 +9,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.RunCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
+import org.firstinspires.ftc.teamcode.Subsystems.LLSub;
+import org.firstinspires.ftc.teamcode.Subsystems.PoseStorage;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
 
@@ -22,6 +25,7 @@ public class SolversLibTest extends CommandOpMode {
     private Shooter shooter;
     private Intake intake;
     private Follower follower;
+    private LLSub llSub;
     TelemetryData telemetryData = new TelemetryData(telemetry);
 
     // init poses
@@ -132,31 +136,32 @@ public class SolversLibTest extends CommandOpMode {
         });
     }
 
-    private InstantCommand autoIdle() {
+    private InstantCommand intakeIdle() {
         return new InstantCommand(() -> {
-            // Example: hangSubsystem.level1Ascent();
+            intake.requestIntakeIdl();
         });
     }
+
 
     @Override
     public void initialize() {
         super.reset();
 
-        shooter = new Shooter(hardwareMap);
-        intake = new Intake(hardwareMap);
-        shooter.setIntake(intake);
-
         // Initialize follower
         follower = Constants.createFollower(hardwareMap);
+
+        shooter = new Shooter(hardwareMap);
+        intake = new Intake(hardwareMap);
+
+        llSub = new LLSub(this);
+
+        LLSub.GOAL_X = 0.0; ///<------ CHANGE THIS TO CORRECT GOAL.
+        LLSub.GOAL_Y = 144.0;
+
         follower.setStartingPose(startPose);
         buildPaths();
 
-        // Schedule the autonomous sequence
-        schedule(
-                new RunCommand(() -> follower.update()),
-                new RunCommand(() -> shooter.update()),
-                new RunCommand(() -> intake.update()),
-
+        SequentialCommandGroup autonomousSequence = new SequentialCommandGroup(
                 // preload score
                 new FollowPathCommand(follower, scorePreload),
                 fire(),
@@ -165,6 +170,7 @@ public class SolversLibTest extends CommandOpMode {
                 // spike 2 intake -> score
                 intake(),
                 new FollowPathCommand(follower, intakeSpike2),
+                intakeIdle(),
                 new FollowPathCommand(follower, scoreSpike2),
                 fire(),
                 new WaitCommand(2000), // Wait 2 seconds
@@ -172,12 +178,15 @@ public class SolversLibTest extends CommandOpMode {
                 // gate intake -> score (1)
                 intake(),
                 new FollowPathCommand(follower, intakeGate),
+                intakeIdle(),
                 new FollowPathCommand(follower, scoreGate),
                 fire(),
                 new WaitCommand(2000), // Wait 2 seconds
 
                 // gate intake -> score (2)
+                intake(),
                 new FollowPathCommand(follower, intakeGate),
+                intakeIdle(),
                 new FollowPathCommand(follower, scoreGate),
                 fire(),
                 new WaitCommand(2000), // Wait 2 seconds
@@ -185,6 +194,7 @@ public class SolversLibTest extends CommandOpMode {
                 // spike 1 intake -> score
                 intake(),
                 new FollowPathCommand(follower, intakeSpike1),
+                intake(),
                 new FollowPathCommand(follower, scoreSpike1),
                 fire(),
                 new WaitCommand(2000), // Wait 2 seconds
@@ -192,6 +202,7 @@ public class SolversLibTest extends CommandOpMode {
                 // spike 3 intake -> score
                 intake(),
                 new FollowPathCommand(follower, intakeSpike3),
+                intake(),
                 new FollowPathCommand(follower, scoreSpike3),
                 fire(),
                 new WaitCommand(2000), // Wait 2 seconds
@@ -199,15 +210,25 @@ public class SolversLibTest extends CommandOpMode {
                 // park
                 new FollowPathCommand(follower, park, false)
         );
+        schedule(autonomousSequence);
     }
 
     @Override
     public void run() {
         super.run();
+        shooter.update();
+        intake.update();
+        follower.update(); // add this
+        llSub.update(follower);
 
+        PoseStorage.lastPose = follower.getPose();
+
+        // Telemetry
         telemetryData.addData("X", follower.getPose().getX());
         telemetryData.addData("Y", follower.getPose().getY());
-        telemetryData.addData("Heading", follower.getPose().getHeading());
+        telemetryData.addData("Heading", Math.toDegrees(follower.getPose().getHeading()));
+        telemetryData.addData("Turret Valid Target", llSub.hasValidTarget());
+        telemetryData.addData("Goal Dist", llSub.getDistanceToGoal());
         telemetryData.update();
     }
 }

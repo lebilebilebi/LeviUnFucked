@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -7,8 +10,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveMechanisms;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Subsystems.LLSub;
+import org.firstinspires.ftc.teamcode.Subsystems.PoseStorage;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
 
+import java.util.List;
 
 @TeleOp(name="TELEOP 1", group="Linear OpMode")
 public class DECODEOPMODE1 extends LinearOpMode {
@@ -26,32 +32,49 @@ public class DECODEOPMODE1 extends LinearOpMode {
     private Shooter shooter;
     private DriveMechanisms drive;
     private LLSub llSub;
+    private Follower follower; // Added Follower
+    private List<LynxModule> allHubs;
 
     private RobotMode currentMode = RobotMode.IDLE;
 
-    private static final double FIRING_FEED_DELAY = 0.3; // seconds before intake feeds
+    private static final double FIRING_FEED_DELAY = 0.3;
 
     @Override
     public void runOpMode() {
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule module : allHubs) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
         // Initialize subsystems
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
         shooter.setIntake(intake);
         drive = new DriveMechanisms(hardwareMap);
         llSub = new LLSub(this);
+
+        // --- NEW: Initialize Follower for TeleOp ---
+        // This is required for field-centric tracking to work
+        follower = Constants.createFollower(hardwareMap);
+        // Important: Set starting pose to (0,0,0) or carry over from Auto if possible
+        follower.setStartingPose(PoseStorage.lastPose);
+
         shooter.setLLSub(llSub);
-        shooter.setManualTargets(1500, 0.45); // start spinning/aiming even in IDLE
+        shooter.setManualTargets(1500, 0.45);
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         waitForStart();
         runtime.reset();
-        llSub.reset();
+        // llSub.reset(); // Removed: method no longer exists
 
         while (opModeIsActive()) {
-            // Update all subsystems
-            llSub.update();
+            // Update Follower FIRST (gets odometry)
+            follower.update();
+
+            // Update Limelight Subsystem (consumes odometry + relocalizes)
+            llSub.update(follower);
 
             // Handle input and mode transitions
             handleInput();
@@ -63,7 +86,9 @@ public class DECODEOPMODE1 extends LinearOpMode {
             shooter.update();
             intake.update();
 
-            // Drive
+            // Drive Controls
+            // Note: If you want to use PedroPathing's field centric drive, utilize follower.setTeleOpMovementVectors()
+            // But keeping your existing drive logic is fine too, as long as follower.update() is called.
             double axial = -gamepad1.left_stick_y;
             double lateral = gamepad1.left_stick_x;
             double yaw = gamepad1.right_stick_x;
@@ -77,16 +102,11 @@ public class DECODEOPMODE1 extends LinearOpMode {
     }
 
     private void handleInput() {
-        // Cross button - Shoot (spin up and auto-feed)
         if (gamepad2.cross) {
             setMode(RobotMode.FIRING);
-        }
-        // Right bumper - Intake
-        else if (gamepad2.right_bumper) {
+        } else if (gamepad2.right_bumper) {
             setMode(RobotMode.INTAKING);
-        }
-        // Left bumper - Stop everything
-        else if (gamepad2.left_bumper) {
+        } else if (gamepad2.left_bumper) {
             setMode(RobotMode.IDLE);
         }
     }
@@ -101,14 +121,11 @@ public class DECODEOPMODE1 extends LinearOpMode {
                     shooter.setState(Shooter.ShooterStates.IDLE);
                     intake.setState(Intake.IntakeStates.IDLE);
                     break;
-
                 case INTAKING:
                     shooter.setState(Shooter.ShooterStates.IDLE);
                     intake.setState(Intake.IntakeStates.INTAKE);
                     break;
-
                 case FIRING:
-                    // Open gate immediately; feed after gate-open delay
                     shooter.setState(Shooter.ShooterStates.FIRING);
                     intake.setState(Intake.IntakeStates.IDLE);
                     break;
@@ -138,18 +155,17 @@ public class DECODEOPMODE1 extends LinearOpMode {
         telemetry.addData("State", shooter.getState());
         telemetry.addData("Target Velocity", "%.1f tps", shooter.getTargetVelocity());
         telemetry.addData("Actual Velocity", "%.1f tps", shooter.getCurrentVelocity());
-        telemetry.addData("At Speed", shooter.isAtSpeed());
         telemetry.addData("Hood Target", "%.3f", shooter.getTargetHoodPosition());
 
         telemetry.addData("=== LIMELIGHT ===", "");
         telemetry.addData("Has Target", llSub.hasValidTarget());
         telemetry.addData("Distance", "%.1f in", llSub.getDistanceToGoal());
-        telemetry.addData("TX/TY", "%.1f / %.1f", llSub.getTx(), llSub.getTy());
+        // Tx/Ty removed because we are doing field-centric calculations now
+        telemetry.addData("Turret Angle", "%.2f", llSub.getFinalHoodAngle()); // Or add a getTurretAngle() if needed
+        telemetry.addData("Turret kP", "%.4f", LLSub.turretKp);
 
         telemetry.addData("=== INTAKE ===", "");
         telemetry.addData("State", intake.getState());
-        telemetry.addData("Has Ball", intake.hasBall());
-        telemetry.addData("Current 1/2", "%.2f / %.2f A", intake.getStage1Current(), intake.getStage2Current());
 
         telemetry.update();
     }

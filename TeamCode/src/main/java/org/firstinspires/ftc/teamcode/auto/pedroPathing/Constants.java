@@ -16,8 +16,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(11.88412)
-            .forwardZeroPowerAcceleration(-30.9290)
-            .lateralZeroPowerAcceleration(-67.6294)
+            .forwardZeroPowerAcceleration(-32.1411)
+            .lateralZeroPowerAcceleration(-62.20204)
             .centripetalScaling(0.0005)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.065,0,0.008,0.023))
             .headingPIDFCoefficients(new PIDFCoefficients(0.43, 0, 0.002, 0.03))
@@ -25,8 +25,8 @@ public class Constants {
 
 
     public static MecanumConstants driveConstants = new MecanumConstants()
-            .xVelocity(80.42785)
-            .yVelocity(60.587175)
+            .xVelocity(57.2309)
+            .yVelocity(75.7091)
             .rightFrontMotorName("fr")
             .rightRearMotorName("br")
             .leftRearMotorName("bl")
@@ -36,10 +36,10 @@ public class Constants {
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
     public static TwoWheelConstants localizerConstants = new TwoWheelConstants()
-            .strafePodX(5.9133)
-            .forwardPodY(4.9370)
-            .forwardTicksToInches(0.002005714155109081)
-            .strafeTicksToInches(0.0019878380712762063)
+            .strafePodX(-5.91158818898)
+            .forwardPodY(-4.85092204724)
+            .forwardTicksToInches(0.0019798)
+            .strafeTicksToInches(0.00197471)
             .forwardEncoderDirection(Encoder.FORWARD)
             .strafeEncoderDirection(Encoder.REVERSE )
             .forwardEncoder_HardwareMapName("fr")
