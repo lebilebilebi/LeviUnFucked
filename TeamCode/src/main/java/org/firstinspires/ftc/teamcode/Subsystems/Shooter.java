@@ -125,12 +125,12 @@ public class Shooter {
         this.targetHoodPosition = hoodPosition;
     }
 
-    private void setFlywheelVelocity(double velocity) {
+    public void setFlywheelVelocity(double velocity) {
         shootR.setVelocity(velocity);
         shootL.setPower(shootR.getPower());
     }
 
-    private void setHoodPosition(double position) {
+    public void setHoodPosition(double position) {
         hoodR.setPosition(position);
         hoodL.setPosition(position);
     }
