@@ -60,14 +60,13 @@ public class DECODEOPMODE1 extends LinearOpMode {
         follower.setStartingPose(PoseStorage.lastPose);
 
         shooter.setLLSub(llSub);
-        shooter.setManualTargets(1500, 0.45);
+        shooter.setManualTargets(1340, 0.36);
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         waitForStart();
         runtime.reset();
-        // llSub.reset(); // Removed: method no longer exists
 
         while (opModeIsActive()) {
             // Update Follower FIRST (gets odometry)
@@ -161,8 +160,8 @@ public class DECODEOPMODE1 extends LinearOpMode {
         telemetry.addData("Has Target", llSub.hasValidTarget());
         telemetry.addData("Distance", "%.1f in", llSub.getDistanceToGoal());
         // Tx/Ty removed because we are doing field-centric calculations now
-        telemetry.addData("Turret Angle", "%.2f", llSub.getFinalHoodAngle()); // Or add a getTurretAngle() if needed
-        telemetry.addData("Turret kP", "%.4f", LLSub.turretKp);
+        //telemetry.addData("Turret Angle", "%.2f", llSub.getFinalHoodAngle()); // Or add a getTurretAngle() if needed
+        //telemetry.addData("Turret kP", "%.4f", LLSub.turretKp);
 
         telemetry.addData("=== INTAKE ===", "");
         telemetry.addData("State", intake.getState());
