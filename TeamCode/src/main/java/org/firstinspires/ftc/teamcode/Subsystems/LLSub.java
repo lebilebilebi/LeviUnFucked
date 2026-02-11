@@ -109,9 +109,9 @@ public class LLSub {
     }
 
     public static double getFlywheelVelocity(double goalDist) {
-        double rawVelocity = (0.0145089 * Math.pow(goalDist, 2))
-                + (0.533929 * goalDist)
-                + 510.4;
+        double rawVelocity = (0.0488281 * Math.pow(goalDist, 2))
+                + (0.279018 * goalDist)
+                + 1187.5;
         return MathFunctions.clamp(rawVelocity, 0.0, 2200.0);
     }
 

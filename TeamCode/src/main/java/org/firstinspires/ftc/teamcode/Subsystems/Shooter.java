@@ -45,7 +45,7 @@ public class Shooter {
     private static final double DEFAULT_TARGET_VELOCITY = 1500.0;
     private static final double DEFAULT_HOOD_POSITION = 0.45;
     private static final double GATE_OPEN_TIME = 0.3;
-    private static final double FEED_TIME = 1.5;
+5    private static final double FEED_TIME = 1.5;
 
     // Reference to LLSub for auto-targeting
     private LLSub llSub;
