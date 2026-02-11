@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.RunCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
@@ -142,20 +143,16 @@ public class SolversLibTest extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        shooter = new Shooter(hardwareMap);
-        intake = new Intake(hardwareMap);
-        shooter.setIntake(intake);
-
         // Initialize follower
         follower = Constants.createFollower(hardwareMap);
+
+        shooter = new Shooter(hardwareMap);
+        intake = new Intake(hardwareMap);
+
         follower.setStartingPose(startPose);
         buildPaths();
 
-        // Schedule the autonomous sequence
-        schedule(
-                new RunCommand(() -> follower.update()),
-                new RunCommand(() -> shooter.update()),
-                new RunCommand(() -> intake.update()),
+        SequentialCommandGroup autonomousSequence = new SequentialCommandGroup(
 
                 // preload score
                 new FollowPathCommand(follower, scorePreload),
@@ -204,6 +201,9 @@ public class SolversLibTest extends CommandOpMode {
     @Override
     public void run() {
         super.run();
+        shooter.update();
+        intake.update();
+        follower.update(); // add this
 
         telemetryData.addData("X", follower.getPose().getX());
         telemetryData.addData("Y", follower.getPose().getY());
