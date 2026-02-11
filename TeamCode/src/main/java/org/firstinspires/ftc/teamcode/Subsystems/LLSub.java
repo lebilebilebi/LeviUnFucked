@@ -20,15 +20,11 @@ public class LLSub {
     private CRServo turretL;
     private AnalogInput turretEncoder;
 
-    // --- Tuning Gains (Position PID for Turret) ---
     public static double turretKp = 0.03;
     public static double turretMaxPower = 1.0;
-
-    // --- DECODE Goal Coordinates (PedroPathing 0-144 system) ---
-    // Update these to match the actual High Basket location on the field map.
-    // (0,0) is usually the Blue Net corner. (144,144) is the Red Observation corner.
-    public static double GOAL_X = 144.0;
-    public static double GOAL_Y = 144.0;
+    public static double LIMELIGHT_OFFSET = 7.42;
+    public static double GOAL_X = 14.5;
+    public static double GOAL_Y = 128.5;
 
     // --- State Variables ---
     private double turretOffsetDegrees = 0; // Calibration offset
@@ -155,7 +151,8 @@ public class LLSub {
         // ------------------------------------------
         // 4. Shooting Calculations
         // ------------------------------------------
-        goalDist = Math.hypot(distX, distY);
+        double centerToGoal = Math.hypot(distX, distY);
+        goalDist = centerToGoal - LIMELIGHT_OFFSET;
         calculatedFlywheelVel = getFlywheelVelocity(goalDist);
         calculatedHoodAngle = getHoodAngle(goalDist);
     }

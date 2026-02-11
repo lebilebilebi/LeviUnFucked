@@ -218,7 +218,7 @@ public class SolversLibTest extends CommandOpMode {
         super.run();
         shooter.update();
         intake.update();
-        follower.update(); // add this
+        follower.update();
         llSub.update(follower);
 
         PoseStorage.lastPose = follower.getPose();
