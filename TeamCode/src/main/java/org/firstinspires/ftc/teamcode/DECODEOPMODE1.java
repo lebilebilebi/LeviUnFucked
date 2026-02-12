@@ -64,9 +64,9 @@ public class DECODEOPMODE1 extends LinearOpMode {
             intake.update();
 
             // Drive
-            double axial = -gamepad1.left_stick_y;
-            double lateral = gamepad1.left_stick_x;
-            double yaw = gamepad1.right_stick_x;
+            double axial = -gamepad2.left_stick_y;
+            double lateral = gamepad2.left_stick_x;
+            double yaw = gamepad2.right_stick_x;
             drive.drive(axial, lateral, yaw);
 
             // Telemetry
@@ -137,9 +137,13 @@ public class DECODEOPMODE1 extends LinearOpMode {
         telemetry.addData("=== SHOOTER ===", "");
         telemetry.addData("State", shooter.getState());
         telemetry.addData("Target Velocity", "%.1f tps", shooter.getTargetVelocity());
-        telemetry.addData("Actual Velocity", "%.1f tps", shooter.getCurrentVelocity());
+        telemetry.addData("Actual Velocity (PRE-COMP)", "%.1f tps", llSub.getCalculatedFlywheelVelPreBattery());
+        telemetry.addData("Actual Velocity (POST-COMP)", "%.1f tps", shooter.getCurrentVelocity());
         telemetry.addData("At Speed", shooter.isAtSpeed());
         telemetry.addData("Hood Target", "%.3f", shooter.getTargetHoodPosition());
+        telemetry.addData("BatteryComp", llSub.getBatteryCompensation());
+
+        telemetry.addData("Compensation Difference", llSub.getTPSDif());
 
         telemetry.addData("=== LIMELIGHT ===", "");
         telemetry.addData("Has Target", llSub.hasValidTarget());

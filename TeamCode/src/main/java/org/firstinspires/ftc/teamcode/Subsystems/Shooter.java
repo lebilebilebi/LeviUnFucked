@@ -45,7 +45,7 @@ public class Shooter {
     private static final double DEFAULT_TARGET_VELOCITY = 1500.0;
     private static final double DEFAULT_HOOD_POSITION = 0.45;
     private static final double GATE_OPEN_TIME = 0.3;
-5    private static final double FEED_TIME = 1.5;
+    private static final double FEED_TIME = 1.5;
 
     // Reference to LLSub for auto-targeting
     private LLSub llSub;
@@ -66,7 +66,7 @@ public class Shooter {
         shootR.setDirection(DcMotorSimple.Direction.REVERSE);
         shootL.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        PIDFCoefficients pidfCoefficients = new PIDFCoefficients(19.8, 0, 0, 12.5960);
+        PIDFCoefficients pidfCoefficients = new PIDFCoefficients(25, 0, 0, 12.5960);
         shootR.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
         // Initialize to safe positions

@@ -208,6 +208,7 @@ public class SolversLibTest extends CommandOpMode {
         telemetryData.addData("X", follower.getPose().getX());
         telemetryData.addData("Y", follower.getPose().getY());
         telemetryData.addData("Heading", follower.getPose().getHeading());
+
         telemetryData.update();
     }
 }

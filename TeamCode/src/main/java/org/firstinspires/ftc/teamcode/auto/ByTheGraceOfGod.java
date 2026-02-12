@@ -16,6 +16,7 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
+import org.firstinspires.ftc.teamcode.Subsystems.LLSub;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
 
@@ -23,12 +24,13 @@ import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
 public class ByTheGraceOfGod extends CommandOpMode {
     private Shooter shooter;
     private Intake intake;
+    private LLSub llSub;
     private Follower follower;
     TelemetryData telemetryData = new TelemetryData(telemetry);
 
     // init poses
     private final Pose startPose = new Pose(21, 122, Math.toRadians(144));
-    private final Pose scorePose = new Pose(86, 56, Math.toRadians(139));
+    private final Pose scorePose = new Pose(56, 86, Math.toRadians(139));
     private final Pose endPose = new Pose(48, 72, Math.toRadians(200));
 
 
@@ -44,7 +46,7 @@ public class ByTheGraceOfGod extends CommandOpMode {
     //private final Pose gateIntakePose = new Pose(12.7, 59, Math.toRadians(150));
 
     //spike 1 intake
-    private final Pose spike1IntakePose = new Pose(19, 84, Math.toRadians(180));
+    private final Pose spike1IntakePose = new Pose(28, 84, Math.toRadians(180));
     //private final Pose spike1controlPoint = new Pose(43, 83.5);
 
     // spike 3 intake
@@ -102,7 +104,7 @@ public class ByTheGraceOfGod extends CommandOpMode {
         // intake and score spike 1
         intakeSpike1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, spike1IntakePose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), spike1IntakePose.getHeading())
+                .setLinearHeadingInterpolation(Math.toRadians(180), spike1IntakePose.getHeading())
                 .build();
 
         scoreSpike1 = follower.pathBuilder()
@@ -158,11 +160,15 @@ public class ByTheGraceOfGod extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        // Initialize follower
         follower = Constants.createFollower(hardwareMap);
 
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap);
+
+        llSub = new LLSub(this);
+        shooter.setIntake(intake);
+        shooter.setLLSub(llSub);
+        shooter.setManualTargets(1500, 0.45);
 
         follower.setStartingPose(startPose);
         buildPaths();
@@ -175,8 +181,9 @@ public class ByTheGraceOfGod extends CommandOpMode {
                 new WaitCommand(2000), // Wait 2 seconds
 
                 // spike 1 intake -> score
-                intake(),
                 new TurnToCommand(follower, 180, AngleUnit.DEGREES),
+                new WaitCommand(1000), // Wait 2 seconds
+                intake(),
                 new FollowPathCommand(follower, intakeSpike1),
                 autoIdle(),
                 new FollowPathCommand(follower, scoreSpike1),
@@ -209,13 +216,19 @@ public class ByTheGraceOfGod extends CommandOpMode {
     @Override
     public void run() {
         super.run();
+
         shooter.update();
         intake.update();
         follower.update();
+        llSub.update();
 
         telemetryData.addData("X", follower.getPose().getX());
         telemetryData.addData("Y", follower.getPose().getY());
         telemetryData.addData("Heading", follower.getPose().getHeading());
+        telemetry.addData("=== LIMELIGHT ===", "");
+        telemetry.addData("Has Target", llSub.hasValidTarget());
+        telemetry.addData("Distance", "%.1f in", llSub.getDistanceToGoal());
+        telemetry.addData("TX/TY", "%.1f / %.1f", llSub.getTx(), llSub.getTy());
         telemetryData.update();
     }
 }
