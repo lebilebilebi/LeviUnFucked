@@ -9,19 +9,24 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.hardware.AnalogInput;
+
 @Configurable
 public class LLSub {
     private Limelight3A limelight;
     private CRServo turretR;
     private CRServo turretL;
+    private AnalogInput turretEncoder; // Add encoder
     private VoltageSensor batteryVoltageSensor;
     private double batteryVolts = 0;
     private double batteryCompensation = 0;
+    private double centerVoltage = 0;
+    private boolean isRecentering = false;
 
-    public static double kP = 0.002;
+    public static double kP = 0.004;
     public static double kD = 0;
-    public static double kF = 0.06;
-    public static double optimalBattery = 12.3;
+    public static double kF = 0.05;
+    public static double optimalBattery = 12.35;
     public static double deadband = LimeLightConstants.TURRET_DEADBAND;
     private double lastError = 0;
     private double calculatedHoodAngle = 0;
@@ -40,10 +45,14 @@ public class LLSub {
         limelight = opMode.hardwareMap.get(Limelight3A.class, "limelight");
         turretR = opMode.hardwareMap.get(CRServo.class, "turretR");
         turretL = opMode.hardwareMap.get(CRServo.class, "turretL");
+        turretEncoder = opMode.hardwareMap.get(AnalogInput.class, "turretEncoder"); // Init encoder
         batteryVoltageSensor = opMode.hardwareMap.voltageSensor.iterator().next();
 
         turretR.setDirection(CRServo.Direction.REVERSE);
         turretL.setDirection(CRServo.Direction.REVERSE);
+
+        // Capture starting position as center
+        centerVoltage = turretEncoder.getVoltage();
 
         opMode.telemetry.setMsTransmissionInterval(11);
         limelight.pipelineSwitch(0);
@@ -54,9 +63,20 @@ public class LLSub {
         LLStatus status = limelight.getStatus();
         LLResult result = limelight.getLatestResult();
 
+        // Update voltage
         batteryVolts = batteryVoltageSensor.getVoltage();
-
         batteryCompensation = optimalBattery/batteryVolts;
+
+        // Handle Recentering Priority
+        if (isRecentering) {
+            recenterTurret(centerVoltage);
+            if (Math.abs(centerVoltage - getTurretVoltage()) < 0.09) {
+                isRecentering = false; // Stop recentering once strictly centered
+                turretR.setPower(0);
+                turretL.setPower(0);
+            }
+            return; // Skip LL tracking while recentering
+        }
 
         if (result != null && result.isValid()) {
             hasValidTarget = true;
@@ -104,6 +124,10 @@ public class LLSub {
             turretR.setPower(0);
             turretL.setPower(0);
         }
+    }
+
+    public void startRecentering() {
+        isRecentering = true;
     }
 
     public void stop() {
@@ -156,6 +180,51 @@ public class LLSub {
 
     public double getTy() {
         return currentTy;
+    }
+
+    public double getTurretVoltage() {
+        return turretEncoder.getVoltage();
+    }
+
+    // Simple P-controller to move turret to specific voltage
+    public void recenterTurret(double targetVoltage) {
+        double currentVoltage = getTurretVoltage();
+        double error = targetVoltage - currentVoltage; // Calculate error
+
+        // Simple P control
+        // Reduced KP to prevent overshoot/jiggle
+        double recenterKp = 0.9;
+        double power = error * recenterKp;
+
+        // Deadband for voltage to prevent jitter
+        // If inside this small range, cut power entirely
+        if(Math.abs(error) < 0.09) {
+            power = 0;
+        } else {
+            // Add a tiny bit of minimum power (feedforward-like) to overcome friction
+            // when error is small but outside deadband
+            double minPower = 0.08;
+            power += Math.signum(error) * minPower;
+        }
+
+        // Apply battery compensation
+        double batteryComp = optimalBattery / getBatteryVoltage();
+        power *= batteryComp;
+
+        // Clamp power heavily to keep it slow and controlled
+        power = MathFunctions.clamp(power, -0.35, 0.35);
+
+        turretR.setPower(power);
+        turretL.setPower(power);
+    }
+
+    public void setTurretPower(double power) {
+        turretR.setPower(power);
+        turretL.setPower(power);
+    }
+
+    public double getBatteryVoltage() {
+        return batteryVoltageSensor.getVoltage();
     }
 
     public double getBatteryCompensation() {

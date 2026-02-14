@@ -64,9 +64,9 @@ public class DECODEOPMODE1 extends LinearOpMode {
             intake.update();
 
             // Drive
-            double axial = -gamepad2.left_stick_y;
-            double lateral = gamepad2.left_stick_x;
-            double yaw = gamepad2.right_stick_x;
+            double axial = -gamepad1.left_stick_y;
+            double lateral = gamepad1.left_stick_x;
+            double yaw = gamepad1.right_stick_x;
             drive.drive(axial, lateral, yaw);
 
             // Telemetry
@@ -105,6 +105,7 @@ public class DECODEOPMODE1 extends LinearOpMode {
                 case INTAKING:
                     shooter.setState(Shooter.ShooterStates.IDLE);
                     intake.setState(Intake.IntakeStates.INTAKE);
+                    llSub.startRecentering();
                     break;
 
                 case FIRING:
