@@ -29,7 +29,7 @@ public class SOLVERSLIBAUTO extends CommandOpMode {
 
     // init poses
     private final Pose startPose = new Pose(21, 122, Math.toRadians(144));
-    private final Pose scorePose = new Pose(56, 86, Math.toRadians(139));
+    private final Pose scorePose = new Pose(56, 86, Math.toRadians(125));//139
     private final Pose endPose = new Pose(48, 72, Math.toRadians(200));
 
 

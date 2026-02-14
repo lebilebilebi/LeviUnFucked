@@ -40,7 +40,7 @@ public class DECODEOPMODE1 extends LinearOpMode {
         drive = new DriveMechanisms(hardwareMap);
         llSub = new LLSub(this);
         shooter.setLLSub(llSub);
-        shooter.setManualTargets(1500, 0.45); // start spinning/aiming even in IDLE
+        shooter.setManualTargets(1185, 0.4); //14 and .45
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
