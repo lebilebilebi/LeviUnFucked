@@ -37,11 +37,16 @@ public class LLSub {
     private double currentTy = 0;
     private boolean hasValidTarget = false;
 
+    public boolean teamColor = true; //TRUE: BLUE. FALSE: RED
+
     private final ElapsedTime timer = new ElapsedTime();
     private LinearOpMode opMode;
     
-    public LLSub(LinearOpMode opMode) {
+    // CHANGED: Added boolean teamColor to constructor
+    public LLSub(LinearOpMode opMode, boolean teamColor) {
         this.opMode = opMode;
+        this.teamColor = teamColor;
+
         limelight = opMode.hardwareMap.get(Limelight3A.class, "limelight");
         turretR = opMode.hardwareMap.get(CRServo.class, "turretR");
         turretL = opMode.hardwareMap.get(CRServo.class, "turretL");
@@ -55,7 +60,12 @@ public class LLSub {
         centerVoltage = turretEncoder.getVoltage();
 
         opMode.telemetry.setMsTransmissionInterval(11);
-        limelight.pipelineSwitch(0);
+
+        if (teamColor){
+            limelight.pipelineSwitch(0);
+        } else {
+            limelight.pipelineSwitch(1);
+        }
         limelight.start();
     }
 
@@ -226,6 +236,10 @@ public class LLSub {
     public double getBatteryVoltage() {
         return batteryVoltageSensor.getVoltage();
     }
+    public double getCenterVoltage() {
+        return centerVoltage;
+    }
+
 
     public double getBatteryCompensation() {
         return batteryCompensation;

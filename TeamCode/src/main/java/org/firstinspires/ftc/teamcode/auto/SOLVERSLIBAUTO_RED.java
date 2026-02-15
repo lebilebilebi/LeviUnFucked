@@ -19,8 +19,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.LLSub;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.auto.pedroPathing.Constants;
 
-@Autonomous (name = "Blue 12", group = "AUTON")
-public class SOLVERSLIBAUTO extends CommandOpMode {
+@Autonomous (name = "Red 12", group = "AUTON")
+public class SOLVERSLIBAUTO_RED extends CommandOpMode {
     private Shooter shooter;
     private Intake intake;
     private LLSub llSub;
@@ -28,31 +28,31 @@ public class SOLVERSLIBAUTO extends CommandOpMode {
     TelemetryData telemetryData = new TelemetryData(telemetry);
 
     // init poses
-    private final Pose startPose = new Pose(21, 122, Math.toRadians(144));
-    private final Pose scorePose = new Pose(56, 86, Math.toRadians(125));//139
-    private final Pose endPose = new Pose(48, 72, Math.toRadians(200));
+    private final Pose startPose = new Pose(21, 122, Math.toRadians(144)).mirror();
+    private final Pose scorePose = new Pose(56, 86, Math.toRadians(115)).mirror();//139
+    private final Pose endPose = new Pose(48, 72, Math.toRadians(200)).mirror();
 
 
     // spike 2 intake
-    private final Pose spike2IntakeStartPose = new Pose(55, 65, Math.toRadians(180));
-    private final Pose spike2IntakePose = new Pose(35, 65, Math.toRadians(180));
-    private final Pose spike2AvoidPose = new Pose(30, 57, Math.toRadians(180));
+    private final Pose spike2IntakeStartPose = new Pose(55, 65, Math.toRadians(180)).mirror();
+    private final Pose spike2IntakePose = new Pose(35, 65, Math.toRadians(180)).mirror();
+    private final Pose spike2AvoidPose = new Pose(30, 57, Math.toRadians(180)).mirror();
     //private final Pose spike2controlPoint = new Pose(45, 60);
 
     // gate intake
-    private final Pose gateOpenPose = new Pose(30, 67, Math.toRadians(180));
-    private final Pose gateAlignPose = new Pose(35, 67, Math.toRadians(180));
+    private final Pose gateOpenPose = new Pose(30, 67, Math.toRadians(180)).mirror();
+    private final Pose gateAlignPose = new Pose(35, 67, Math.toRadians(180)).mirror();
 
     //private final Pose gateControlPoint = new Pose(40, 64);
     //private final Pose gateIntakePose = new Pose(12.7, 59, Math.toRadians(150));
 
     //spike 1 intake
-    private final Pose spike1IntakePose = new Pose(32, 87, Math.toRadians(180));
+    private final Pose spike1IntakePose = new Pose(32, 87, Math.toRadians(180)).mirror();
     //private final Pose spike1controlPoint = new Pose(43, 83.5);
 
     // spike 3 intake
-    private final Pose spike3IntakeStartPose = new Pose(55, 39, Math.toRadians(180));
-    private final Pose spike3IntakePose = new Pose(35, 39, Math.toRadians(180));
+    private final Pose spike3IntakeStartPose = new Pose(55, 39, Math.toRadians(180)).mirror();
+    private final Pose spike3IntakePose = new Pose(35, 39, Math.toRadians(180)).mirror();
     //private final Pose spike3controlPoint = new Pose(52, 36);
 
     // Path chains
@@ -114,7 +114,7 @@ public class SOLVERSLIBAUTO extends CommandOpMode {
         // intake and score spike 1
         intakeSpike1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, spike1IntakePose))
-                .setLinearHeadingInterpolation(Math.toRadians(180), spike1IntakePose.getHeading())
+                .setLinearHeadingInterpolation(Math.toRadians(0), spike1IntakePose.getHeading())
                 .build();
 
         scoreSpike1 = follower.pathBuilder()
@@ -178,7 +178,7 @@ public class SOLVERSLIBAUTO extends CommandOpMode {
         shooter = new Shooter(hardwareMap);
         intake = new Intake(hardwareMap);
 
-        llSub = new LLSub(this, true);
+        llSub = new LLSub(this, false);
 
         shooter.setIntake(intake);
         shooter.setLLSub(llSub);
@@ -207,7 +207,7 @@ public class SOLVERSLIBAUTO extends CommandOpMode {
                 new WaitCommand(1500), // Wait 2 seconds
 
                 // spike 1 intake -> score
-                new TurnToCommand(follower, 180, AngleUnit.DEGREES),
+                new TurnToCommand(follower, 0, AngleUnit.DEGREES),
                 new WaitCommand(500), // Wait .5 seconds
                 intake(),
                 new FollowPathCommand(follower, intakeSpike1, 0.3),

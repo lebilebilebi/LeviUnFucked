@@ -10,8 +10,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.LLSub;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 
 
-@TeleOp(name="TELEOP 1", group="Linear OpMode")
-public class DECODEOPMODE1 extends LinearOpMode {
+@TeleOp(name="BLUE_TELE", group="Linear OpMode")
+public class BLUE_OP extends LinearOpMode {
 
     public enum RobotMode {
         IDLE,
@@ -38,7 +38,7 @@ public class DECODEOPMODE1 extends LinearOpMode {
         shooter = new Shooter(hardwareMap);
         shooter.setIntake(intake);
         drive = new DriveMechanisms(hardwareMap);
-        llSub = new LLSub(this);
+        llSub = new LLSub(this, true);
         shooter.setLLSub(llSub);
         shooter.setManualTargets(1185, 0.4); //14 and .45
 
@@ -134,6 +134,8 @@ public class DECODEOPMODE1 extends LinearOpMode {
     private void displayTelemetry() {
         telemetry.addData("=== MODE ===", currentMode);
         telemetry.addData("Runtime", "%.1f s", runtime.seconds());
+        telemetry.addData("Encoder", llSub.getCenterVoltage());
+
 
         telemetry.addData("=== SHOOTER ===", "");
         telemetry.addData("State", shooter.getState());
