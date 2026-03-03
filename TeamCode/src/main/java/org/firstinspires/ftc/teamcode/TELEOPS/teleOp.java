@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.OpModes.TeleOp;
+package org.firstinspires.ftc.teamcode.TELEOPS;
 
 import static org.firstinspires.ftc.teamcode.robot.robot.OpModeType.TELEOP;
 

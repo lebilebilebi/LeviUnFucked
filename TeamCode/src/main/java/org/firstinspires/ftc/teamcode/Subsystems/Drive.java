@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 
@@ -48,6 +49,12 @@ public class Drive extends WSubsystem{
         this.rightRear = rightRear;
 
         // TODO: REVERSE WHEELS HERE
+        /*
+        leftFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        leftRear.setDirection(DcMotorSimple.Direction.FORWARD);
+        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
+         */
 
         this.pinpoint = pinpoint;
 
@@ -77,6 +84,10 @@ public class Drive extends WSubsystem{
 
         return targetConfirmTimer.seconds() >= targetConfirmTimeThresh_sec || overTimeProtectionTimer.seconds()
                 >= overtimeThresh_sec;
+    }
+
+    public void setTargetHeading (double heading_deg) {
+        targetPoint.setHeading(heading_deg);
     }
 
     public void recalibrateIMU() {

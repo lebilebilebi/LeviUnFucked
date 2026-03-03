@@ -23,7 +23,7 @@ public class HeadingTuner extends CommandOpMode {
     public void initialize() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry()); {
         }
-        this.drive = drive = new Drive(
+        this.drive = new Drive(
                 hardwareMap.get(DcMotorEx.class, "leftFront"),
                 hardwareMap.get(DcMotorEx.class, "leftFront"),
                 hardwareMap.get(DcMotorEx.class, "leftFront"),
