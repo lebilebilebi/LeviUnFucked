@@ -1,10 +1,10 @@
-package org.firstinspires.ftc.teamcode.Subsystems.Commands;
+package org.firstinspires.ftc.teamcode.LebiPathing.Subsystems.Commands;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
-import org.firstinspires.ftc.teamcode.Subsystems.Drive;
-import org.firstinspires.ftc.teamcode.util.Point;
+import org.firstinspires.ftc.teamcode.LebiPathing.Subsystems.Drive;
+import org.firstinspires.ftc.teamcode.LebiPathing.util.Point;
 
 public class DriveCommand {
     public static class StickInputs extends CommandBase {

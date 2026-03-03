@@ -1,15 +1,15 @@
-package org.firstinspires.ftc.teamcode.AUTOS;
+package org.firstinspires.ftc.teamcode.LebiPathing.AUTOS;
 
-import static org.firstinspires.ftc.teamcode.robot.robot.OpModeType.AUTO;
+import static org.firstinspires.ftc.teamcode.LebiPathing.robot.robot.OpModeType.AUTO;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
-import org.firstinspires.ftc.teamcode.Subsystems.Commands.DriveCommand;
-import org.firstinspires.ftc.teamcode.robot.robot;
-import org.firstinspires.ftc.teamcode.util.Point;
+import org.firstinspires.ftc.teamcode.LebiPathing.Subsystems.Commands.DriveCommand;
+import org.firstinspires.ftc.teamcode.LebiPathing.robot.robot;
+import org.firstinspires.ftc.teamcode.LebiPathing.util.Point;
 
 @Autonomous
 public class AutoTest extends CommandOpMode {
@@ -22,7 +22,7 @@ public class AutoTest extends CommandOpMode {
                 new RunCommand(robot::read),
                 new RunCommand(robot::loop),
                 new RunCommand(robot::write),
-                new RunCommand(robot.drive::driveToTarget),
+                //new RunCommand(robot.drive::driveToTarget),
                 new SequentialCommandGroup(
                         new DriveCommand.DriveToPoint(robot.drive,
                                 new Point(24, 0, 0)),

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.util;
+package org.firstinspires.ftc.teamcode.LebiPathing.util;
 
 public class SquIDController {
     private double kSQ;

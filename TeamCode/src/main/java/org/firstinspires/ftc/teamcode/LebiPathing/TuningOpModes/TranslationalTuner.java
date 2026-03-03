@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tuningOpModes;
+package org.firstinspires.ftc.teamcode.LebiPathing.TuningOpModes;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -10,24 +10,23 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.RunCommand;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive;
-import org.firstinspires.ftc.teamcode.util.Point;
+import org.firstinspires.ftc.teamcode.LebiPathing.Subsystems.Drive;
+import org.firstinspires.ftc.teamcode.LebiPathing.util.Point;
 
 @TeleOp
 @Config
-public class HeadingTuner extends CommandOpMode {
+public class TranslationalTuner extends CommandOpMode {
     private Drive drive;
-    public double sQH;
+    public static double sQT;
     @Override
     public void initialize() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry()); {
         }
         this.drive = new Drive(
                 hardwareMap.get(DcMotorEx.class, "leftFront"),
-                hardwareMap.get(DcMotorEx.class, "leftFront"),
-                hardwareMap.get(DcMotorEx.class, "leftFront"),
-                hardwareMap.get(DcMotorEx.class, "leftFront"),
+                hardwareMap.get(DcMotorEx.class, "leftRear"),
+                hardwareMap.get(DcMotorEx.class, "rightFront"),
+                hardwareMap.get(DcMotorEx.class, "rightRear"),
                 hardwareMap.get(GoBildaPinpointDriver.class, "pinPoint"),
                 telemetry,
                 null
@@ -47,13 +46,13 @@ public class HeadingTuner extends CommandOpMode {
     public void run() {
         drive.stickInput(0, 0,0);
         if (gamepad1.a){
-            drive.setTargetPoint(new Point());
+            drive.setTargetPoint(new Point()); // Point() can be used alone without passing in things
             drive.driveToTarget();
         } else if (gamepad1.b) {
-            drive.setTargetPoint(new Point(0, 0, 180));
+            drive.setTargetPoint(new Point(24, 24, 90)); //abt tile size
             drive.driveToTarget();
         }
-        drive.tuneHeading(sQH);
+        drive.tuneTranslational(sQT);
         telemetry.update();
         super.run();
     }

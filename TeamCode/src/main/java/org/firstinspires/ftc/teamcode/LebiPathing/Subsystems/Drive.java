@@ -1,9 +1,8 @@
-package org.firstinspires.ftc.teamcode.Subsystems;
+package org.firstinspires.ftc.teamcode.LebiPathing.Subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 
@@ -11,9 +10,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.teamcode.robot.robot;
-import org.firstinspires.ftc.teamcode.util.Point;
-import org.firstinspires.ftc.teamcode.util.SquIDController;
+import org.firstinspires.ftc.teamcode.LebiPathing.robot.robot;
+import org.firstinspires.ftc.teamcode.LebiPathing.util.Point;
+import org.firstinspires.ftc.teamcode.LebiPathing.util.SquIDController;
 
 import lombok.Setter;
 @Config
@@ -78,7 +77,7 @@ public class Drive extends WSubsystem{
 
     public boolean isAtTarget() {
         if (!isInRadius(targetPoint, radiusThresh_in) || Math.abs(Math.toDegrees(headingError_RAD))
-        >= headingThresh_deg) {
+                >= headingThresh_deg) {
             targetConfirmTimer.reset();
         }
 
@@ -115,12 +114,12 @@ public class Drive extends WSubsystem{
 
     public void stickInput(double drive, double strafe, double turn){
         final double MIN_POW = 0.1;
-        this.drive = drive * (1.0 - MIN_POW) + Math.signum(drive * drive);
-        this.strafe = strafe * (1.0 - MIN_POW) + Math.signum(strafe * strafe);
-        this.turn = turn * (1.0 - MIN_POW) + Math.signum(turn * turn);
+        this.drive = Math.abs(drive) > 0.02 ? drive * (1.0 - MIN_POW) + Math.signum(drive) * MIN_POW : 0;
+        this.strafe = Math.abs(strafe) > 0.02 ? strafe * (1.0 - MIN_POW) + Math.signum(strafe) * MIN_POW : 0;
+        this.turn = Math.abs(turn) > 0.02 ? turn * (1.0 - MIN_POW) + Math.signum(turn) * MIN_POW : 0;
 
-        Vector2d powerVec = new Vector2d(this.drive, this. strafe);
-        powerVec = powerVec.rotateBy(Math.toDegrees(robotHeading_Rad) + 90); //add deg for where drivers are
+        Vector2d powerVec = new Vector2d(this.drive, this.strafe);
+        powerVec = powerVec.rotateBy(Math.toDegrees(robotHeading_Rad) + 90);
         this.drive = powerVec.getX();
         this.strafe = powerVec.getY();
     }
@@ -132,6 +131,7 @@ public class Drive extends WSubsystem{
     }
 
     public void tuneTranslational(double kSQ) {
+        translationalController.setkSQ(kSQ);
         telemetry.addData("Position", errorVector.magnitude());
         telemetry.addData("Target", 0.0);
     }

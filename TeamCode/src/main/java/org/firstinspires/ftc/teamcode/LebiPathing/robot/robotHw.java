@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robot;
+package org.firstinspires.ftc.teamcode.LebiPathing.robot;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Subsystems.WSubsystem;
+import org.firstinspires.ftc.teamcode.LebiPathing.Subsystems.WSubsystem;
 
 import java.util.List;
 @Config
@@ -17,8 +17,8 @@ public class robotHw extends WSubsystem {
     private final DeviceMapping<VoltageSensor> voltageSensor;
     public static double voltage = 0.0;
     private ElapsedTime voltageTimer = new ElapsedTime();
-    private double loopTime = 0.0;
-    private double prevLoopTime = 0.0;
+    private double loopTime = System.nanoTime();
+    private double prevLoopTime = System.nanoTime();
 
 
     public robotHw(Telemetry telemetry, List<LynxModule> allHubs, DeviceMapping<VoltageSensor> voltageSensor) {
@@ -44,8 +44,8 @@ public class robotHw extends WSubsystem {
 
     @Override
     public void loop() {
-        loopTime = 1e9 / (loopTime - prevLoopTime);
-        telemetry.addData("Loop Time", loopTime);
+        double hz = 1e9 / (loopTime - prevLoopTime);
+        telemetry.addData("Loop Time", hz);
         prevLoopTime = loopTime;
     }
 

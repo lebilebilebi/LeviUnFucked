@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robot;
+package org.firstinspires.ftc.teamcode.LebiPathing.robot;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.Robot;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive;
+import org.firstinspires.ftc.teamcode.LebiPathing.Subsystems.Drive;
 public class robot extends Robot {
     private final Telemetry telemetry;
     private final HardwareMap hardwareMap;
@@ -33,16 +33,15 @@ public class robot extends Robot {
     }
 
     public void init(){
-        // add subsystem constructors
         drive = new Drive(
                 hardwareMap.get(DcMotorEx.class, "leftFront"),
-                hardwareMap.get(DcMotorEx.class, "leftFront"),
-                hardwareMap.get(DcMotorEx.class, "leftFront"),
-                hardwareMap.get(DcMotorEx.class, "leftFront"),
+                hardwareMap.get(DcMotorEx.class, "leftRear"),
+                hardwareMap.get(DcMotorEx.class, "rightFront"),
+                hardwareMap.get(DcMotorEx.class, "rightRear"),
                 hardwareMap.get(GoBildaPinpointDriver.class, "pinPoint"),
                 telemetry,
                 this
-                );
+        );
     }
 
     public void read(){

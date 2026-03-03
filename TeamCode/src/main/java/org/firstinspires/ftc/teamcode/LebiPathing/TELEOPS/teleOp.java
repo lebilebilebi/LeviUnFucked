@@ -1,14 +1,14 @@
-package org.firstinspires.ftc.teamcode.TELEOPS;
+package org.firstinspires.ftc.teamcode.LebiPathing.TELEOPS;
 
-import static org.firstinspires.ftc.teamcode.robot.robot.OpModeType.TELEOP;
+import static org.firstinspires.ftc.teamcode.LebiPathing.robot.robot.OpModeType.TELEOP;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
-import org.firstinspires.ftc.teamcode.Subsystems.Commands.DriveCommand;
-import org.firstinspires.ftc.teamcode.robot.robot;
+import org.firstinspires.ftc.teamcode.LebiPathing.Subsystems.Commands.DriveCommand;
+import org.firstinspires.ftc.teamcode.LebiPathing.robot.robot;
 @TeleOp
 public class teleOp extends CommandOpMode {
     private robot robot;
