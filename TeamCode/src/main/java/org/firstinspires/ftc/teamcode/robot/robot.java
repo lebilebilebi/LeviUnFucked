@@ -10,7 +10,6 @@ import com.seattlesolvers.solverslib.command.Robot;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive;
-
 public class robot extends Robot {
     private final Telemetry telemetry;
     private final HardwareMap hardwareMap;

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.robot;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap.DeviceMapping;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -9,7 +10,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Subsystems.WSubsystem;
 
 import java.util.List;
-
+@Config
 public class robotHw extends WSubsystem {
     private final Telemetry telemetry;
     private final List<LynxModule> allHubs;

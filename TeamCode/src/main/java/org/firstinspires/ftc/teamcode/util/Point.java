@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.util;
 
 import lombok.Getter;
 import lombok.Setter;
-
 public class Point {
     @Getter
     @Setter

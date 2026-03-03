@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -13,13 +15,22 @@ import org.firstinspires.ftc.teamcode.util.Point;
 import org.firstinspires.ftc.teamcode.util.SquIDController;
 
 import lombok.Setter;
-
+@Config
 public class Drive extends WSubsystem{
+    private final double radiusThresh_in = 3;
+    private final double headingThresh_deg = 15;
+    private final double targetConfirmTimeThresh_sec = 0.1;
+    private double overtimeThresh_sec = 3;
+
     private SquIDController headingController = new SquIDController(0.0);
     private SquIDController translationalController = new SquIDController(0.0);
+    private ElapsedTime targetConfirmTimer = new ElapsedTime();
+    private ElapsedTime overTimeProtectionTimer = new ElapsedTime();
+
     private Vector2d errorVector = new Vector2d();
     private double headingError_RAD;
-    @Setter
+
+    @Setter //<--- VERY IMPORTANT
     private Point targetPoint = new Point();
     private final DcMotorEx leftFront, leftRear, rightFront, rightRear;
     private final GoBildaPinpointDriver pinpoint;
@@ -44,6 +55,28 @@ public class Drive extends WSubsystem{
 
         this.telemetry = telemetry;
         this.robot = robot;
+    }
+
+    public boolean isInRadius (Point point, double radius_in) {
+        double xDelta = point.getX() - robotX_in;
+        double yDelta = point.getY() - robotY_in;
+        double distanceSquared = xDelta * xDelta + yDelta * yDelta;
+        return distanceSquared <= radius_in * radius_in;
+    }
+
+    public void trajectoryStartSequence() {
+        targetConfirmTimer.reset();
+        overTimeProtectionTimer.reset();
+    }
+
+    public boolean isAtTarget() {
+        if (!isInRadius(targetPoint, radiusThresh_in) || Math.abs(Math.toDegrees(headingError_RAD))
+        >= headingThresh_deg) {
+            targetConfirmTimer.reset();
+        }
+
+        return targetConfirmTimer.seconds() >= targetConfirmTimeThresh_sec || overTimeProtectionTimer.seconds()
+                >= overtimeThresh_sec;
     }
 
     public void recalibrateIMU() {
