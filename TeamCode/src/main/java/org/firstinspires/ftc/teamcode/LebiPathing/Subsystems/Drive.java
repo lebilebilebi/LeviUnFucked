@@ -17,8 +17,6 @@ import org.firstinspires.ftc.teamcode.LebiPathing.util.SquIDController;
 import lombok.Setter;
 @Config
 public class Drive extends WSubsystem{
-    private final double radiusThresh_in = 3;
-    private final double headingThresh_deg = 15;
     private final double targetConfirmTimeThresh_sec = 0.1;
     private double overtimeThresh_sec = 3;
 
@@ -76,8 +74,8 @@ public class Drive extends WSubsystem{
     }
 
     public boolean isAtTarget() {
-        if (!isInRadius(targetPoint, radiusThresh_in) || Math.abs(Math.toDegrees(headingError_RAD))
-                >= headingThresh_deg) {
+        if (!isInRadius(targetPoint, targetPoint.getRadiusThresh()) || Math.abs(Math.toDegrees(headingError_RAD))
+                >= targetPoint.getHeadingThresh()) {
             targetConfirmTimer.reset();
         }
 
@@ -157,6 +155,17 @@ public class Drive extends WSubsystem{
         leftRearPow = drive - strafe + turn;
         rightFrontPow = drive - strafe - turn;
         rightRearPow = drive + strafe - turn;
+
+        double max = Math.max(Math.max(Math.abs(leftFrontPow), Math.abs(leftRearPow)),
+                Math.max(Math.abs(rightFrontPow), Math.abs(rightRearPow)));
+        double limit = targetPoint.getMaxPower();
+        if (max > limit) {
+            double scale = limit / max;
+            leftFrontPow *= scale;
+            leftRearPow *= scale;
+            rightFrontPow *= scale;
+            rightRearPow *= scale;
+        }
     }
 
     @Override

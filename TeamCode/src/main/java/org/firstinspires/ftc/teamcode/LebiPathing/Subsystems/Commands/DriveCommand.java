@@ -7,6 +7,24 @@ import org.firstinspires.ftc.teamcode.LebiPathing.Subsystems.Drive;
 import org.firstinspires.ftc.teamcode.LebiPathing.util.Point;
 
 public class DriveCommand {
+    private final Drive drive;
+
+    public DriveCommand(Drive drive) {
+        this.drive = drive;
+    }
+
+    public DriveToPoint toPoint(Point point) {
+        return new DriveToPoint(drive, point);
+    }
+
+    public TurnToHeading turnTo(double heading) {
+        return new TurnToHeading(drive, heading);
+    }
+
+    public StickInputs stickInputs(GamepadEx gamepadEx) {
+        return new StickInputs(drive, gamepadEx);
+    }
+
     public static class StickInputs extends CommandBase {
         private final Drive drive;
         private final GamepadEx gamepadEx;
