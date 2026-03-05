@@ -25,6 +25,11 @@ public class Drive extends WSubsystem{
     private ElapsedTime targetConfirmTimer = new ElapsedTime();
     private ElapsedTime overTimeProtectionTimer = new ElapsedTime();
 
+    // Interpolation state
+    private double startHeading_Rad;
+    private double pathTotalDistance;
+    private double startX, startY;
+
     private Vector2d errorVector = new Vector2d();
     private double headingError_RAD;
 
@@ -71,6 +76,12 @@ public class Drive extends WSubsystem{
     public void trajectoryStartSequence() {
         targetConfirmTimer.reset();
         overTimeProtectionTimer.reset();
+
+        // Capture data for interpolation
+        startHeading_Rad = robotHeading_Rad;
+        startX = robotX_in;
+        startY = robotY_in;
+        pathTotalDistance = -1; // Flag to calculate distance on first loop
     }
 
     public boolean isAtTarget() {
@@ -97,12 +108,35 @@ public class Drive extends WSubsystem{
     }
 
     public void driveToTarget(){
-        headingError_RAD = AngleUnit.normalizeRadians(Math.toRadians(targetPoint.getHeading()) -
-                robotHeading_Rad);
+        if (pathTotalDistance == -1) {
+            pathTotalDistance = Math.hypot(targetPoint.getX() - startX, targetPoint.getY() - startY);
+            if (pathTotalDistance == 0) pathTotalDistance = 0.001; // Avoid divide by zero
+        }
+
+        double desiredHeading_Rad = Math.toRadians(targetPoint.getHeading());
+
+        if (targetPoint.getHeadingMode() == Point.HeadingMode.LINEAR) {
+            double distToTarget = Math.hypot(targetPoint.getX() - robotX_in, targetPoint.getY() - robotY_in);
+            double progress = 1.0 - (distToTarget / pathTotalDistance); // 0.0 to 1.0
+
+            double headingProgress;
+            if (targetPoint.getHeadingEndTime() < 0.001) {
+                headingProgress = 1.0;
+            } else {
+                headingProgress = Math.min(progress / targetPoint.getHeadingEndTime(), 1.0);
+            }
+            headingProgress = Math.max(0, headingProgress);
+
+            // Linear Interpolation
+            double diff = AngleUnit.normalizeRadians(Math.toRadians(targetPoint.getHeading()) - startHeading_Rad);
+            desiredHeading_Rad = startHeading_Rad + (diff * headingProgress);
+        }
+
+        headingError_RAD = AngleUnit.normalizeRadians(desiredHeading_Rad - robotHeading_Rad);
+
         errorVector = new Vector2d(targetPoint.getX() - robotX_in, targetPoint.getY() - robotY_in);
 
 
-        //Rotate vector
         errorVector = errorVector.rotateBy(-Math.toDegrees(robotHeading_Rad));
 
         turn = - headingController.calculate(headingError_RAD);

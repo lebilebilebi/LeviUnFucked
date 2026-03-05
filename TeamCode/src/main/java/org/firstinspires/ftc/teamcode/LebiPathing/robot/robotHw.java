@@ -44,8 +44,8 @@ public class robotHw extends WSubsystem {
 
     @Override
     public void loop() {
-        double hz = 1e9 / (loopTime - prevLoopTime);
-        telemetry.addData("Loop Time", hz);
+        loopTime = 1e9 / (loopTime - prevLoopTime);
+        telemetry.addData("Loop Time", loopTime);
         prevLoopTime = loopTime;
     }
 

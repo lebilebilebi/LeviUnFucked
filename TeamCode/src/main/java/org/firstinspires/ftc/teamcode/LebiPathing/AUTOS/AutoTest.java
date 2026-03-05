@@ -9,6 +9,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.LebiPathing.Subsystems.Commands.DriveCommand;
+import org.firstinspires.ftc.teamcode.LebiPathing.Subsystems.Drive;
 import org.firstinspires.ftc.teamcode.LebiPathing.robot.robot;
 import org.firstinspires.ftc.teamcode.LebiPathing.util.Point;
 
@@ -19,16 +20,16 @@ public class AutoTest extends CommandOpMode {
     * 2: I made it so you don't HAVE to pass in anything, with default values for Point(); being 0, 0, 0.
     * 3: Add in the X, Y, and Heading of the point.
     * 4: OPTIONAL: by using .setThresholds(), you can pass in the radius and heading thresholds into the points.
+    * 5: OPTIONAL: by using .setHeadingInterpolation, you can pass in the the type of Heading Interpolation
+    * and arguments for said Interpolation (constant has none)
     * */
-    private final Point startPose = new Point(0, 0, 0);
-    private final Point scorePose = new Point(24, 0, 0);
-    private final Point pickupPose = new Point(24, 24, 0, 0.5).setThresholds(
-            1.5, 10);
+    private final Point startPose = new Point(0, 0, 0)
+            .setHeadingInterpolation(Point.HeadingMode.CONSTANT)
+            .setThresholds(3,15);
+    private final Point scorePose = new Point(24, 0, 90)
+            .setHeadingInterpolation(Point.HeadingMode.LINEAR, 0.8)
+            .setThresholds(3,15);
 
-
-    /*1: Init it all: create a "public void initialize()", this should hold recalibration,
-    * setting a start pose, and the setting up the robot class (pass in AUTO not TELEOP)
-    */
     @Override
     public void initialize() {
         robot robot = new robot(telemetry, hardwareMap, AUTO);
@@ -51,10 +52,11 @@ public class AutoTest extends CommandOpMode {
                 new RunCommand(robot::read),
                 new RunCommand(robot::loop),
                 new RunCommand(robot::write),
+                new RunCommand(robot.drive::driveToTarget),
                 new SequentialCommandGroup(
-                        squid.toPoint(scorePose),
-                        new WaitCommand(100),
-                        squid.toPoint(pickupPose))
+                        squid.toPoint(scorePose), //Drive to score pose point
+                        new WaitCommand(100), //Wait 1 second (using solvers lib wait)
+                        squid.turnTo(startPose)) //Turn to a heading (can pass in point or angle)
         );
     }
 }

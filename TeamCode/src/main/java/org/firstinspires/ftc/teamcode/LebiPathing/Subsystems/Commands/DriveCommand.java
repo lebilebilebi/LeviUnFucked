@@ -21,6 +21,10 @@ public class DriveCommand {
         return new TurnToHeading(drive, heading);
     }
 
+    public TurnToHeading turnTo(Point point) {
+        return new TurnToHeading(drive, point.getHeading());
+    }
+
     public StickInputs stickInputs(GamepadEx gamepadEx) {
         return new StickInputs(drive, gamepadEx);
     }

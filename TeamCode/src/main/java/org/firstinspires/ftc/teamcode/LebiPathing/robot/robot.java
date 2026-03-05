@@ -46,6 +46,7 @@ public class robot extends Robot {
 
     public void read(){
         robotHw.read();
+        drive.read();
     }
 
     public void loop(){
